@@ -1,0 +1,2606 @@
+<!-- ═══════════════════════════════════════════════════════════
+     SiurotCurrículo — módulo embebido para WordPress/Divi
+     Página: curriculo-lomloe · Pegar en un módulo de CÓDIGO de Divi
+     (NO usar el módulo de Texto: rompe las etiquetas de script de tipo módulo JS)
+     Incluye: Navegador, Buscador y Generador de fichas (SIN contraseña:
+     el currículo ya se sirve como JSON estático desde Hosting, así que
+     no hay riesgo de agotar cuota de lecturas de base de datos por difusión).
+     ═══════════════════════════════════════════════════════════ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+
+    /* ─── TOKENS ─────────────────────────────────────────────── */
+    #siurot-app{
+      --verde:       #0c71c3;
+      --verde-dark:  #074679;
+      --verde-light: #ecf4fa;
+      --ambar:       #d97b29;
+      --ambar-light: #fdf2e7;
+      --fondo:       #f3f5f8;
+      --superficie:  #ffffff;
+      --texto:       #161b26;
+      --texto-2:     #5b6577;
+      --borde:       #dde2ea;
+      --error:       #d6394a;
+      --sombra:      0 1px 2px rgba(16,34,56,0.06), 0 1px 3px rgba(16,34,56,0.08);
+      --sombra-md:   0 8px 24px rgba(16,34,56,0.12), 0 2px 6px rgba(16,34,56,0.06);
+      --radio:       14px;
+      --radio-chip:  20px;
+      --trans:       160ms cubic-bezier(.4,0,.2,1);
+
+      /* Colores de bloque A-I */
+      --blA-bg: #e8f4fd; --blA-bd: #2196F3; --blA-tx: #0d47a1;
+      --blB-bg: #f3e5f5; --blB-bd: #9C27B0; --blB-tx: #4a148c;
+      --blC-bg: #e8f5e9; --blC-bd: #4CAF50; --blC-tx: #1b5e20;
+      --blD-bg: #fff3e0; --blD-bd: #FF9800; --blD-tx: #e65100;
+      --blE-bg: #fce4ec; --blE-bd: #E91E63; --blE-tx: #880e4f;
+      --blF-bg: #e0f2f1; --blF-bd: #009688; --blF-tx: #004d40;
+      --blG-bg: #f9fbe7; --blG-bd: #8BC34A; --blG-tx: #33691e;
+      --blH-bg: #e8eaf6; --blH-bd: #3F51B5; --blH-tx: #1a237e;
+      --blI-bg: #fff8e1; --blI-bd: #FFC107; --blI-tx: #ff6f00;
+
+      /* Colores descriptores */
+      --ccl:   #1565C0; --stem:  #2E7D32;
+      --cd:    #6A1B9A; --cpsaa: #E65100;
+      --cc:    #B71C1C; --ce:    #00695C;
+      --cp:    #006064; --ccec:  #4E342E;
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────── */
+    #siurot-app *, #siurot-app *::before, #siurot-app *::after{ box-sizing: border-box; margin: 0; padding: 0; }
+    #siurot-app {
+      font-size: 16px; scroll-behavior: smooth;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+    #siurot-app button{ font-family: inherit; cursor: pointer; border: none; background: none; }
+    #siurot-app input{ font-family: inherit; }
+    #siurot-app ul, #siurot-app ol{ list-style: none; }
+
+    /* ─── HEADER ────────────────────────────────────────────── */
+    #siurot-app .header{
+      background: linear-gradient(155deg, var(--verde) 0%, var(--verde-dark) 100%);
+      color: white;
+      padding: 0 16px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 16px rgba(18,58,92,0.25);
+    }
+    #siurot-app .header-inner{
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 58px;
+    }
+    #siurot-app .logo-mark{
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: white;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+    #siurot-app .logo-mark img{ width: 38px; height: 38px; object-fit: cover; display: block; }
+    #siurot-app .header-title{ font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    #siurot-app .header-sub{ font-size: 11px; opacity: 0.65; font-weight: 400; display: none; }
+    @media (min-width: 480px) { #siurot-app .header-sub{ display: block; } }
+    #siurot-app .header-texts{ flex: 1; }
+
+    /* ─── NAV TABS ──────────────────────────────────────────── */
+    #siurot-app .nav-tabs{
+      background: var(--verde-dark);
+      display: flex;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    #siurot-app .nav-tab{
+      flex: 1; padding: 10px 8px 8px;
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.55);
+      text-align: center; border-bottom: 3px solid transparent;
+      transition: var(--trans); letter-spacing: 0.3px; text-transform: uppercase;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    #siurot-app .nav-tab svg{ width: 18px; height: 18px; }
+    #siurot-app .nav-tab:hover{ color: rgba(255,255,255,0.85); }
+    #siurot-app .nav-tab.active{
+      color: var(--ambar);
+      border-bottom-color: var(--ambar);
+    }
+    #siurot-app .nav-tabs-wrap{
+      background: var(--verde-dark);
+      box-shadow: 0 2px 8px rgba(18,58,92,0.15);
+    }
+
+    /* ─── MAIN ──────────────────────────────────────────────── */
+    #siurot-app .main{
+      flex: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px 16px 100px;
+    }
+
+    /* ─── PANELS ────────────────────────────────────────────── */
+    #siurot-app .panel{ display: none; }
+    #siurot-app .panel.active{ display: block; }
+
+    /* ─── SECCIÓN DE PASO ───────────────────────────────────── */
+    #siurot-app .step-section{
+      margin-bottom: 20px;
+      animation: fadeUp 200ms ease both;
+    }
+    #siurot-app .step-label{
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--texto-2);
+      margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    }
+    #siurot-app .step-num{
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--verde); color: white;
+      font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── CHIPS ─────────────────────────────────────────────── */
+    #siurot-app .chips{ display: flex; flex-wrap: wrap; gap: 8px; }
+    #siurot-app .chip{
+      padding: 8px 14px;
+      border-radius: var(--radio-chip);
+      border: 1.5px solid var(--borde);
+      background: var(--superficie);
+      color: var(--texto);
+      font-size: 13px; font-weight: 500;
+      transition: var(--trans);
+      min-height: 36px;
+      display: flex; align-items: center; gap: 6px;
+      user-select: none;
+    }
+    #siurot-app .chip:hover{ background: var(--verde-light); border-color: var(--verde); }
+    #siurot-app .chip.active{
+      background: var(--verde); border-color: var(--verde);
+      color: white; box-shadow: 0 2px 8px rgba(30,91,140,0.28);
+    }
+    #siurot-app .chip.active:hover{ background: var(--verde-dark); }
+    #siurot-app .chip-abrev{
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; opacity: 0.7;
+    }
+
+    /* ─── COMPETENCIA CARD ──────────────────────────────────── */
+    #siurot-app .comp-card{
+      background: var(--superficie);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      border: 1.5px solid var(--borde);
+      transition: var(--trans);
+    }
+    #siurot-app .comp-card:hover{ border-color: var(--verde); box-shadow: var(--sombra-md); transform: translateY(-1px); }
+    #siurot-app .comp-card.active{ border-color: var(--verde); background: var(--verde-light); }
+    #siurot-app .comp-header{ display: flex; align-items: flex-start; gap: 12px; }
+    #siurot-app .comp-num{
+      background: var(--verde); color: white;
+      width: 28px; height: 28px; border-radius: 9px;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 3px rgba(18,58,92,0.25);
+    }
+    #siurot-app .comp-text{ font-size: 13px; line-height: 1.5; color: var(--texto); }
+    #siurot-app .comp-descriptores{ margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+    #siurot-app .desc-chip{
+      font-size: 10px; font-weight: 700; padding: 2px 7px;
+      border-radius: 10px; color: white; letter-spacing: 0.3px;
+    }
+
+    /* ─── CRITERIO CARD ─────────────────────────────────────── */
+    #siurot-app .criterios-lista{ display: flex; flex-direction: column; gap: 14px; }
+    #siurot-app .crit-card{
+      background: var(--superficie);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      border-left: 3px solid var(--verde);
+      overflow: hidden;
+      animation: fadeUp 200ms ease both;
+      transition: box-shadow var(--trans);
+    }
+    #siurot-app .crit-card:hover{ box-shadow: var(--sombra-md); }
+    #siurot-app .crit-head{
+      padding: 14px 16px 10px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    #siurot-app .crit-info{ flex: 1; }
+    #siurot-app .crit-codigo{
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 500;
+      background: var(--verde-light); color: var(--verde);
+      padding: 2px 7px; border-radius: 6px;
+      display: inline-block; margin-bottom: 6px;
+    }
+    #siurot-app .crit-texto{ font-size: 13px; line-height: 1.55; font-weight: 500; }
+
+    /* ─── SABERES ───────────────────────────────────────────── */
+    #siurot-app .saberes-wrap{ padding: 0 16px 14px 16px; }
+    #siurot-app .saberes-titulo{
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--texto-2); margin-bottom: 8px;
+    }
+    #siurot-app .bloque-grupo{
+      border-radius: 8px; margin-bottom: 8px; overflow: hidden;
+      border: 1.5px solid;
+    }
+    #siurot-app .bloque-head{
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; font-size: 11px; font-weight: 600;
+    }
+    #siurot-app .bloque-letra{
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
+    }
+    #siurot-app .bloque-nombre{ flex: 1; }
+    #siurot-app .saber-lista{ padding: 0 10px 8px 10px; }
+    #siurot-app .saber-item{
+      display: flex; align-items: flex-start; gap: 6px;
+      padding: 5px 0;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    #siurot-app .saber-item:first-child{ border-top: none; }
+    #siurot-app .saber-dot{ width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    #siurot-app .saber-content{ flex: 1; }
+    #siurot-app .saber-desc{ font-size: 12.5px; line-height: 1.5; color: var(--texto); }
+    #siurot-app .saber-codigo{
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; color: var(--texto-2); margin-top: 1px;
+    }
+
+    /* Saberes sin bloque (Religión) */
+    #siurot-app .saberes-simple{ padding: 0 16px 14px; }
+    #siurot-app .saber-simple-item{
+      display: flex; gap: 8px; padding: 5px 0;
+      border-top: 1px solid var(--borde); font-size: 12.5px; line-height: 1.5;
+    }
+    #siurot-app .saber-simple-item:first-child{ border-top: none; }
+    #siurot-app .saber-simple-dot{ color: var(--ambar); flex-shrink: 0; margin-top: 2px; font-size: 14px; }
+
+    /* ─── BUSCADOR ──────────────────────────────────────────── */
+    #siurot-app .search-wrap{
+      position: relative; margin-bottom: 16px;
+    }
+    #siurot-app .search-icon{
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; color: var(--texto-2); pointer-events: none;
+    }
+    #siurot-app .search-input{
+      width: 100%; padding: 12px 44px 12px 40px;
+      border-radius: var(--radio); border: 1.5px solid var(--borde);
+      background: var(--superficie); font-size: 15px; color: var(--texto);
+      box-shadow: var(--sombra); transition: var(--trans);
+      outline: none;
+    }
+    #siurot-app .search-input:focus{ border-color: var(--verde); box-shadow: 0 0 0 3px rgba(30,91,140,0.14); }
+    #siurot-app .search-clear{
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--borde); color: var(--texto-2);
+      display: none; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    #siurot-app .search-clear.visible{ display: flex; }
+    #siurot-app .search-clear:hover{ background: var(--texto-2); color: white; }
+
+    #siurot-app .filtros-wrap{ display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    #siurot-app .filtro-chip{
+      padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: 600;
+      border: 1.5px solid var(--borde); background: var(--superficie);
+      color: var(--texto-2); transition: var(--trans);
+    }
+    #siurot-app .filtro-chip.active{
+      background: var(--ambar-light); border-color: var(--ambar);
+      color: var(--verde-dark);
+    }
+
+    #siurot-app .search-results-info{
+      font-size: 12px; color: var(--texto-2); margin-bottom: 12px;
+    }
+    #siurot-app .result-grupo{ margin-bottom: 20px; }
+    #siurot-app .result-grupo-head{
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    #siurot-app .result-area-badge{
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 700;
+      background: var(--verde); color: white;
+      padding: 3px 8px; border-radius: 6px;
+    }
+    #siurot-app .result-curso{ font-size: 12px; color: var(--texto-2); font-weight: 500; }
+
+    #siurot-app .result-card{
+      background: var(--superficie); border-radius: var(--radio);
+      box-shadow: var(--sombra); padding: 12px 14px;
+      margin-bottom: 8px; border-left: 3px solid var(--ambar);
+      animation: fadeUp 200ms ease both;
+    }
+    #siurot-app .result-comp-label{
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--texto-2); margin-bottom: 4px;
+    }
+    #siurot-app .result-crit{
+      font-size: 13px; font-weight: 500; line-height: 1.5; margin-bottom: 8px;
+    }
+    #siurot-app mark{
+      background: #fff176; color: var(--texto); border-radius: 2px;
+      padding: 0 1px;
+    }
+    #siurot-app .result-saberes{ display: flex; flex-direction: column; gap: 3px; }
+    #siurot-app .result-saber{
+      font-size: 12px; color: var(--texto-2); line-height: 1.4;
+      padding-left: 10px; border-left: 2px solid var(--borde);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+    }
+    #siurot-app .result-saber-texto{ flex: 1; min-width: 0; }
+    #siurot-app .result-saber .saber-toggle{ width: 22px; height: 22px; }
+    #siurot-app .result-saber .saber-toggle svg{ width: 12px; height: 12px; }
+
+    /* ─── EMPTY STATE ───────────────────────────────────────── */
+    #siurot-app .empty-state{
+      text-align: center; padding: 60px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    #siurot-app .empty-icon{
+      width: 64px; height: 64px;
+      background: var(--verde-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--verde);
+    }
+    #siurot-app .empty-icon svg{ width: 32px; height: 32px; }
+    #siurot-app .empty-title{ font-size: 16px; font-weight: 700; color: var(--texto); }
+    #siurot-app .empty-desc{ font-size: 13px; color: var(--texto-2); max-width: 280px; line-height: 1.5; }
+
+    /* ─── SKELETON ──────────────────────────────────────────── */
+    #siurot-app .skeleton{
+      background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    #siurot-app .skeleton-card{
+      height: 80px; margin-bottom: 10px; border-radius: var(--radio);
+    }
+
+    /* ─── TOAST ─────────────────────────────────────────────── */
+    #siurot-app .toast{
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--texto); color: white;
+      padding: 11px 20px; border-radius: var(--radio-chip);
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--sombra-md); z-index: 999;
+      transition: transform 300ms ease;
+      white-space: nowrap;
+    }
+    #siurot-app .toast.show{ transform: translateX(-50%) translateY(0); }
+    #siurot-app .toast.success{ background: var(--verde); }
+    #siurot-app .toast.error{ background: var(--error); }
+
+    /* ─── OFFLINE BANNER ─────────────────────────────────────── */
+    #siurot-app .offline-banner{
+      background: #fff3cd; color: #664d03;
+      padding: 10px 16px; font-size: 12px; font-weight: 500;
+      text-align: center; display: none;
+    }
+    #siurot-app .offline-banner.visible{ display: block; }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    #siurot-app .footer{
+      text-align: center; padding: 14px 16px;
+      font-size: 11px; color: var(--texto-2);
+      border-top: 1px solid var(--borde);
+      background: var(--superficie);
+    }
+
+    /* ─── ANIMACIONES ────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── FOCUS VISIBLE ──────────────────────────────────────── */
+    #siurot-app :focus-visible{
+      outline: 2px solid var(--verde);
+      outline-offset: 2px;
+    }
+
+    /* ─── SCROLL BAR ─────────────────────────────────────────── */
+    #siurot-app ::-webkit-scrollbar{ width: 6px; }
+    #siurot-app ::-webkit-scrollbar-track{ background: transparent; }
+    #siurot-app ::-webkit-scrollbar-thumb{ background: var(--borde); border-radius: 3px; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+
+    /* Móvil pequeño (<360px): ajustes mínimos para no romper nada */
+    @media (max-width: 359px) {
+      #siurot-app .header-title{ font-size: 14px; }
+      #siurot-app .chip{ font-size: 12px; padding: 7px 10px; }
+      #siurot-app .nav-tab{ font-size: 10px; padding: 8px 4px 6px; }
+      #siurot-app .crit-body{ padding: 12px; }
+      #siurot-app .comp-card{ padding: 12px 14px; }
+    }
+
+    /* Móvil estándar (<480px): táctil-friendly */
+    @media (max-width: 480px) {
+      /* Logo centrado y alineado en móvil */
+      #siurot-app .logo-mark{
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+      #siurot-app .header-inner{ gap: 10px; height: 54px; }
+
+      /* Chips más fáciles de pulsar */
+      #siurot-app .chip{ min-height: 40px; font-size: 13px; }
+
+      /* Cards con más aire táctil */
+      #siurot-app .comp-card{ padding: 14px 14px; }
+      #siurot-app .crit-body{ padding: 14px; }
+
+      /* Toast legible en pantallas estrechas */
+      #siurot-app .toast{
+        white-space: normal;
+        text-align: center;
+        width: calc(100% - 32px);
+        left: 16px;
+        transform: translateX(0) translateY(80px);
+        bottom: 16px;
+      }
+      #siurot-app .toast.show{ transform: translateX(0) translateY(0); }
+
+      /* Búsqueda: barra full width */
+      #siurot-app .search-wrap{ padding: 0; }
+    }
+
+    /* Tablet y escritorio (≥640px) */
+    @media (min-width: 640px) {
+      #siurot-app .main{ padding: 24px 24px 80px; }
+      #siurot-app .chips{ gap: 10px; }
+      #siurot-app .chip{ font-size: 14px; }
+    }
+
+    /* Escritorio ancho (≥820px): centrado ya gestionado por max-width en .main */
+    @media (min-width: 820px) {
+      #siurot-app .main{ padding: 28px 0 80px; }
+    }
+
+    /* ─── LOADER INICIAL ─────────────────────────────────────── */
+    #siurot-app #app-loader{
+      position: absolute; inset: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(155deg, var(--verde) 0%, var(--verde-dark) 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      z-index: 9999; transition: opacity 500ms ease;
+    }
+    #siurot-app #app-loader .loader-logo{
+      background: white;
+      width: 160px; height: 160px;
+      border-radius: 32px;
+      overflow: hidden; padding: 0;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+    }
+    #siurot-app #app-loader .loader-logo img{
+      width: 160px; height: 160px;
+      object-fit: cover; display: block;
+    }
+    #siurot-app #app-loader .loader-titulo{
+      color: white; font-size: 22px; font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    #siurot-app #app-loader .loader-sub{
+      color: rgba(255,255,255,0.65); font-size: 13px; margin-top: -12px;
+    }
+    #siurot-app #app-loader p{ color: rgba(255,255,255,0.75); font-size: 14px; }
+    #siurot-app #app-loader.hidden{ opacity: 0; pointer-events: none; }
+
+    /* ─── GENERADOR DE FICHAS: TOGGLE EN CADA SABER ──────────── */
+    #siurot-app .saber-item{ justify-content: space-between; align-items: center; }
+    #siurot-app .saber-content-row{ display: flex; align-items: flex-start; gap: 6px; flex: 1; min-width: 0; }
+    #siurot-app .saber-toggle{
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid var(--borde); background: var(--superficie);
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--trans); color: var(--texto-2);
+    }
+    #siurot-app .saber-toggle svg{ width: 14px; height: 14px; }
+    #siurot-app .saber-toggle:hover{ border-color: var(--verde); color: var(--verde); }
+    #siurot-app .saber-toggle.activo{ background: var(--verde); border-color: var(--verde); color: white; }
+
+    /* ─── CESTA FLOTANTE ──────────────────────────────────────── */
+    #siurot-app .cesta-flotante{
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--verde-dark); color: white;
+      padding: 9px 9px 9px 18px; border-radius: var(--radio-chip);
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--sombra-md); z-index: 200;
+      transition: transform 250ms ease; max-width: calc(100% - 32px);
+    }
+    #siurot-app .cesta-flotante.visible{ transform: translateX(-50%) translateY(0); }
+    #siurot-app .cesta-flotante-count{ font-size: 13px; font-weight: 600; white-space: nowrap; }
+    #siurot-app .cesta-flotante-btn{
+      background: var(--ambar); color: white; white-space: nowrap;
+      padding: 8px 14px; border-radius: var(--radio-chip);
+      font-size: 12.5px; font-weight: 700;
+    }
+
+    /* ─── PANEL: GENERAR FICHA ────────────────────────────────── */
+    #siurot-app .gen-bloque{
+      background: var(--superficie); border-radius: var(--radio);
+      box-shadow: var(--sombra); border: 1.5px solid var(--borde);
+      margin-bottom: 12px; overflow: hidden;
+    }
+    #siurot-app .gen-bloque-head{ display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+    #siurot-app .gen-bloque-titulo-wrap{ flex: 1; min-width: 0; }
+    #siurot-app .gen-bloque-titulo{ font-size: 13px; font-weight: 700; }
+    #siurot-app .gen-bloque-count{ font-size: 11px; color: var(--texto-2); font-weight: 500; }
+    #siurot-app .gen-bloque-acciones{ display: flex; gap: 6px; flex-shrink: 0; }
+    #siurot-app .btn-mini{
+      font-size: 11px; font-weight: 600; padding: 6px 10px;
+      border-radius: var(--radio-chip); border: 1.5px solid var(--borde);
+      background: var(--superficie); color: var(--texto);
+    }
+    #siurot-app .btn-mini:hover{ border-color: var(--verde); }
+    #siurot-app .btn-mini.primario{ background: var(--verde); border-color: var(--verde); color: white; }
+    #siurot-app .gen-bloque-items{ padding: 0 14px 12px; display: none; flex-direction: column; gap: 6px; }
+    #siurot-app .gen-bloque.abierto .gen-bloque-items{ display: flex; }
+    #siurot-app .gen-bloque-item{
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+      font-size: 12.5px; color: var(--texto-2); padding: 6px 0;
+      border-top: 1px solid var(--borde);
+    }
+    #siurot-app .gen-bloque-item:first-child{ border-top: none; }
+    #siurot-app .gen-item-quitar{ color: var(--error); font-size: 11px; font-weight: 600; flex-shrink: 0; }
+
+    #siurot-app .gen-section-titulo{
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--texto-2); margin: 26px 0 10px;
+    }
+    #siurot-app .gen-aviso{
+      background: var(--verde-light); border: 1px solid var(--verde);
+      border-radius: 10px; padding: 10px 12px; font-size: 12.5px;
+      color: var(--verde-dark); margin-bottom: 14px; line-height: 1.5;
+    }
+    #siurot-app .gen-campo{ margin-bottom: 12px; }
+    #siurot-app .gen-campo label{ display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--texto); }
+    #siurot-app .gen-fila{ display: flex; gap: 12px; flex-wrap: wrap; }
+    #siurot-app .gen-fila > div{ flex: 1; min-width: 140px; }
+    #siurot-app .gen-input, #siurot-app .gen-select, #siurot-app .gen-textarea{
+      width: 100%; padding: 9px 11px; border: 1.5px solid var(--borde);
+      border-radius: 10px; font-size: 13.5px; font-family: inherit;
+      background: var(--superficie); color: var(--texto);
+    }
+    #siurot-app .gen-textarea{ resize: vertical; min-height: 56px; }
+    #siurot-app .gen-input:focus, #siurot-app .gen-select:focus, #siurot-app .gen-textarea:focus{
+      outline: none; border-color: var(--verde); box-shadow: 0 0 0 3px rgba(30,91,140,0.14);
+    }
+
+    #siurot-app .gen-grupos-guardados{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    #siurot-app .gen-grupo-chip{
+      display: flex; align-items: center; gap: 4px;
+      padding: 6px 6px 6px 12px; border-radius: var(--radio-chip);
+      border: 1.5px solid var(--borde); background: var(--superficie);
+      font-size: 12.5px; font-weight: 500;
+    }
+    #siurot-app .gen-grupo-chip.activo{ border-color: var(--verde); background: var(--verde-light); }
+    #siurot-app .gen-grupo-chip button{
+      width: 20px; height: 20px; border-radius: 50%; color: var(--texto-2);
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+    #siurot-app .gen-grupo-chip button:hover{ background: var(--borde); color: var(--error); }
+
+    #siurot-app .gen-alumno-card{
+      border: 1.5px solid var(--borde); border-radius: 10px;
+      margin-bottom: 8px; background: var(--fondo); overflow: hidden;
+    }
+    #siurot-app .gen-alumno-card.abierto{ border-color: var(--verde); }
+    #siurot-app .gen-alumno-head{ display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; cursor: pointer; gap: 8px; }
+    #siurot-app .gen-alumno-head input{ font-weight: 600; max-width: 160px; font-size: 13px; }
+    #siurot-app .gen-alumno-resumen{ font-size: 11.5px; color: var(--texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    #siurot-app .gen-alumno-body{ padding: 0 12px 12px; border-top: 1px solid var(--borde); padding-top: 10px; }
+    #siurot-app .gen-neae-grupo-titulo{
+      font-size: 10.5px; font-weight: 700; color: var(--texto-2);
+      text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 5px;
+    }
+    #siurot-app .gen-neae-hijos{
+      display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+      gap: 5px 12px; padding-left: 12px; border-left: 2px solid var(--borde); margin-bottom: 4px;
+    }
+    #siurot-app .gen-check-grid{ display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 5px 12px; }
+    #siurot-app .gen-check-item{ display: flex; align-items: flex-start; gap: 6px; font-size: 12px; }
+    #siurot-app .gen-check-item input{ margin-top: 2px; }
+
+    #siurot-app .gen-tipos-ficha{ display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 8px; }
+    #siurot-app .gen-tipo-item{ display: flex; align-items: center; gap: 6px; padding: 9px 10px; border: 1.5px solid var(--borde); border-radius: 10px; font-size: 12.5px; }
+    #siurot-app .gen-tipo-item:has(input:checked){ border-color: var(--verde); background: var(--verde-light); font-weight: 600; }
+
+    #siurot-app .gen-resultado-card{
+      background: var(--superficie); border-radius: var(--radio);
+      box-shadow: var(--sombra); border: 1.5px solid var(--borde);
+      padding: 14px; margin-bottom: 14px;
+    }
+    #siurot-app .gen-resultado-titulo{ font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    #siurot-app .gen-resultado-texto{
+      background: var(--verde-dark); color: #eaf1f8;
+      border-radius: 10px; padding: 14px; font-family: "JetBrains Mono", monospace;
+      font-size: 11.5px; line-height: 1.6; white-space: pre-wrap;
+      max-height: 340px; overflow-y: auto; margin-bottom: 10px;
+    }
+    #siurot-app .gen-copiado-msg{ color: var(--verde); font-size: 12px; font-weight: 600; margin-left: 8px; display: none; }
+
+    /* ─── MODAL DE CONFIRMACIÓN ───────────────────────────────── */
+    #siurot-app .modal-overlay{
+      position: fixed; inset: 0; background: rgba(15,30,45,0.45);
+      display: none; align-items: center; justify-content: center;
+      z-index: 300; padding: 20px;
+    }
+    #siurot-app .modal-overlay.visible{ display: flex; }
+    #siurot-app .modal-box{
+      background: var(--superficie); border-radius: var(--radio);
+      box-shadow: var(--sombra-md); max-width: 380px; width: 100%;
+      padding: 20px 20px 16px; animation: modalIn 180ms ease;
+    }
+    @keyframes modalIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    #siurot-app .modal-mensaje{ font-size: 13.5px; line-height: 1.5; color: var(--texto); margin-bottom: 18px; }
+    #siurot-app .modal-acciones{ display: flex; justify-content: flex-end; gap: 8px; }
+    #siurot-app .modal-acciones .btn-mini{ padding: 8px 14px; font-size: 12.5px; }
+
+  
+</style>
+
+<div id="siurot-app">
+
+
+<!-- LOADER -->
+<div id="app-loader">
+  <div class="loader-logo"><img src="https://siurotsaberes.web.app/icon512.png" alt="Logo CEIP Manuel Siurot" /></div>
+  <div class="loader-titulo">Currículo CEIP Manuel Siurot</div>
+  <div class="loader-sub">CEIP Manuel Siurot · La Palma del Condado</div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offline-banner">
+  📶 Sin conexión — mostrando datos en caché
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-mark" id="header-logo" style="cursor:pointer"><img src="https://siurotsaberes.web.app/icon192.png" alt="Logo CEIP Manuel Siurot" /></div>
+    <div class="header-texts" id="header-title-wrap" style="cursor:pointer">
+      <div class="header-title">Currículo CEIP Manuel Siurot</div>
+      <div class="header-sub">CEIP Manuel Siurot · La Palma del Condado</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<div class="nav-tabs-wrap">
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" role="tab" aria-selected="true" data-panel="navegador" aria-controls="panel-navegador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Navegador
+    </button>
+    <button class="nav-tab" role="tab" aria-selected="false" data-panel="buscador" aria-controls="panel-buscador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscador
+    </button>
+    <button class="nav-tab" role="tab" aria-selected="false" data-panel="generador" aria-controls="panel-generador" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Generar ficha
+      <span id="cesta-badge" style="display:none;position:absolute;top:2px;right:6px;background:var(--ambar);color:white;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px;"></span>
+    </button>
+    <button class="nav-tab" id="btn-reiniciar-tab" role="tab" aria-label="Volver al inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+      Limpiar
+    </button>
+  </nav>
+</div>
+
+<main class="main">
+
+  <!-- ═══════════════ PANEL: NAVEGADOR ═══════════════ -->
+  <section class="panel active" id="panel-navegador" role="tabpanel">
+
+    <!-- Paso 1: Etapa -->
+    <div class="step-section" id="step-etapa">
+      <div class="step-label"><span class="step-num">1</span> Etapa educativa</div>
+      <div class="chips" id="chips-etapa">
+        <button class="chip" data-val="infantil">Educación Infantil</button>
+        <button class="chip" data-val="primaria">Educación Primaria</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: Área -->
+    <div class="step-section" id="step-area" style="display:none">
+      <div class="step-label"><span class="step-num">2</span> Área</div>
+      <div class="chips" id="chips-area"></div>
+    </div>
+
+    <!-- Paso 3: Curso -->
+    <div class="step-section" id="step-curso" style="display:none">
+      <div class="step-label"><span class="step-num">3</span> Curso</div>
+      <div class="chips" id="chips-curso"></div>
+    </div>
+
+    <!-- Paso 4: Competencias -->
+    <div class="step-section" id="step-comp" style="display:none">
+      <div class="step-label"><span class="step-num">4</span> Competencia específica</div>
+      <div id="comps-lista"></div>
+    </div>
+
+    <!-- Resultado: Criterios -->
+    <div class="step-section" id="step-criterios" style="display:none">
+      <div class="step-label" style="margin-bottom:14px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--verde)"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Criterios de evaluación y saberes básicos
+      </div>
+      <div id="criterios-lista" class="criterios-lista"></div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ PANEL: BUSCADOR ═══════════════ -->
+  <section class="panel" id="panel-buscador" role="tabpanel">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search-input" type="search"
+        placeholder="Buscar en criterios y saberes…"
+        aria-label="Buscar en el currículo" autocomplete="off" />
+      <button class="search-clear" id="search-clear" aria-label="Limpiar búsqueda">✕</button>
+    </div>
+
+    <div class="filtros-wrap" id="filtros-etapa">
+      <button class="filtro-chip active" data-etapa="primaria">Primaria</button>
+      <button class="filtro-chip" data-etapa="infantil">Infantil</button>
+    </div>
+
+    <div class="filtros-wrap" id="filtros-area" style="display:none">
+      <button class="filtro-chip active" data-area="">Todas las áreas</button>
+    </div>
+
+    <div class="filtros-wrap" id="filtros-curso" style="display:none">
+      <button class="filtro-chip active" data-curso="">Todos los cursos</button>
+    </div>
+
+    <div id="search-results-info" class="search-results-info"></div>
+    <div id="search-results"></div>
+  </section>
+
+  <!-- ═══════════════ PANEL: GENERAR FICHA ═══════════════ -->
+  <section class="panel" id="panel-generador" role="tabpanel">
+
+    <div class="gen-section-titulo">Selección actual</div>
+    <div id="gen-cesta-vacia" class="empty-state" style="padding:30px 20px;">
+      <div class="empty-desc">Todavía no has marcado ningún saber. Ve al Navegador o al Buscador y pulsa el círculo junto a cada saber que quieras trabajar.</div>
+    </div>
+    <div id="gen-cesta-bloques"></div>
+
+    <div id="gen-resto" style="display:none;">
+
+      <div class="gen-section-titulo">Perfil de grupo</div>
+      <div class="gen-grupos-guardados" id="gen-grupos-guardados"></div>
+      <div class="gen-fila" style="margin-bottom:8px;">
+        <button class="btn-mini" data-action="gen-nuevo-grupo">+ Nuevo grupo</button>
+        <button class="btn-mini" data-action="gen-importar-trigger">Importar grupos</button>
+        <button class="btn-mini" data-action="gen-exportar-grupos">Exportar todos</button>
+        <input type="file" id="gen-input-importar" accept="application/json" style="display:none;" data-onchange="gen-importar-archivo">
+      </div>
+
+      <div class="gen-aviso">
+        Los alumnos se identifican con una etiqueta (Alumno 1, Alumno 2…), nunca con su nombre real, porque estos datos se copiarán fuera de la aplicación hacia el asistente de IA que elijas.
+      </div>
+
+      <div class="gen-fila">
+        <div class="gen-campo" style="flex:2;">
+          <label for="gen-nombre-grupo">Nombre de este grupo</label>
+          <input type="text" id="gen-nombre-grupo" class="gen-input" placeholder="Ej: Matemáticas 5º B">
+        </div>
+        <div class="gen-campo" id="gen-campo-edad" style="display:none;">
+          <label for="gen-edad">Edad (Infantil)</label>
+          <select id="gen-edad" class="gen-select">
+            <option value="3 años">3 años</option>
+            <option value="4 años">4 años</option>
+            <option value="5 años">5 años</option>
+          </select>
+        </div>
+        <div class="gen-campo">
+          <label for="gen-num-alumnos">Nº de alumnos</label>
+          <input type="number" id="gen-num-alumnos" class="gen-input" min="0" placeholder="Ej: 24">
+        </div>
+      </div>
+
+      <div class="gen-campo">
+        <label for="gen-descripcion-grupo">Descripción general del grupo (opcional)</label>
+        <textarea id="gen-descripcion-grupo" class="gen-textarea" placeholder="Ej: grupo participativo, poca autonomía en tareas largas..."></textarea>
+      </div>
+
+      <div class="gen-campo">
+        <label>Alumnado con necesidades específicas</label>
+        <div id="gen-lista-alumnos"></div>
+        <button class="btn-mini" data-action="gen-anadir-alumno">+ Añadir alumno</button>
+      </div>
+
+      <button class="btn-mini primario" data-action="gen-guardar-grupo">Guardar este grupo</button>
+
+      <div class="gen-campo" style="margin-top:10px;">
+        <label>¿Vas a adjuntar algún material de referencia (PDF, resumen, imagen)?</label>
+        <div class="gen-check-item" style="margin-bottom:8px;">
+          <input type="checkbox" id="gen-check-material" data-onchange="gen-material-toggle">
+          <span>Sí, adjuntaré un material de referencia junto al prompt</span>
+        </div>
+        <div id="gen-campo-material-desc" style="display:none;">
+          <input type="text" id="gen-material-desc" class="gen-input" placeholder="¿Qué contiene? Ej: resumen del tema de los volcanes, con esquema e imágenes">
+        </div>
+      </div>
+
+      <div class="gen-section-titulo">Tipo de ficha</div>
+      <div class="gen-tipos-ficha" id="gen-tipos-ficha"></div>
+
+      <div class="gen-campo">
+        <label for="gen-observaciones">Observaciones u orientaciones sobre el resultado (opcional)</label>
+        <textarea id="gen-observaciones" class="gen-textarea" placeholder="Ej: que el producto final sea un tríptico informativo; usar como hilo conductor el huerto escolar; evitar referencias a animales..."></textarea>
+      </div>
+
+      <div class="gen-section-titulo">Generar</div>
+      <button class="btn-mini primario" data-action="gen-generar-todos">Generar fichas de todos los bloques</button>
+      <div id="gen-resultados" style="margin-top:16px;"></div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  CEIP Manuel Siurot · La Palma del Condado · Huelva · LOMLOE 2022
+</footer>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-mensaje" id="modal-mensaje"></div>
+    <div class="modal-acciones">
+      <button class="btn-mini" data-action="modal-cancelar">Cancelar</button>
+      <button class="btn-mini primario" data-action="modal-confirmar">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CESTA FLOTANTE -->
+<div class="cesta-flotante" id="cesta-flotante">
+  <span class="cesta-flotante-count" id="cesta-flotante-count">0 elementos seleccionados</span>
+  <button class="cesta-flotante-btn" data-action="ir-a-generador">Ver selección</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<!-- ═══ DATOS DEL CURRÍCULO (JSON estático) ═══ -->
+<script type="module">
+/* ─── MAPA DE BLOQUES ─────────────────────────────────── */
+const BLOQUES = {
+  CA: { A:"El cuerpo y el control progresivo del mismo", B:"Desarrollo y juego afectivo", C:"Autocuidado y cuidado del entorno", D:"Interacción cívica y social" },
+  DEE:{ A:"Diálogo corporal con el entorno. Exploración de objetos y materiales", B:"Aproximación al mundo natural", C:"Proyección en el entorno físico y social. El paso del tiempo" },
+  CRR:{ A:"Repertorio comunicativo y comunicación no verbal", B:"Lenguas y realidad lingüística del entorno", C:"El lenguaje oral en situaciones cotidianas", D:"Aproximación al lenguaje escrito", E:"Educación literaria", F:"Lenguaje y expresión musical", G:"Lenguaje y expresión plástica", H:"Lenguaje y expresión corporal", I:"Alfabetización digital y lenguaje audiovisual" },
+  CM: { A:"Cultura científica", B:"Tecnología y digitalización", C:"Sociedades y territorios" },
+  EA: { A:"Recepción y análisis", B:"Creación e interpretación", C:"Artes plásticas, visuales y audiovisuales", D:"Música y artes escénicas y performativas" },
+  EF: { A:"Vida activa y saludable", B:"Organización y gestión de la actividad física", C:"Resolución de problemas en situaciones motrices", D:"Manifestaciones de la cultura motriz", E:"Interacción eficiente y sostenible con el entorno", F:"Afectivo-motriz" },
+  LC: { A:"Las lenguas y sus hablantes", B:"Comunicación", C:"Educación literaria", D:"Reflexión sobre la lengua y sus usos" },
+  LE: { A:"Las lenguas y sus hablantes", B:"Comunicación", C:"Plurilingüismo y competencia intercultural", D:"Reflexión sobre la lengua y el aprendizaje" },
+  MA: { A:"Sentido numérico", B:"Sentido de la medida", C:"Sentido espacial", D:"Sentido algebraico y pensamiento computacional", E:"Sentido estocástico", F:"Sentido socioafectivo" },
+  VCE:{ A:"Autoconocimiento y autonomía moral", B:"Sociedad, justicia y democracia", C:"Sostenibilidad y ética ambiental" },
+  REL: null,
+};
+
+const COLORES_BLOQUE = {
+  A:{ bg:'#e8f4fd', bd:'#2196F3', tx:'#0d47a1', dot:'#2196F3' },
+  B:{ bg:'#f3e5f5', bd:'#9C27B0', tx:'#4a148c', dot:'#9C27B0' },
+  C:{ bg:'#e8f5e9', bd:'#4CAF50', tx:'#1b5e20', dot:'#4CAF50' },
+  D:{ bg:'#fff3e0', bd:'#FF9800', tx:'#e65100', dot:'#FF9800' },
+  E:{ bg:'#fce4ec', bd:'#E91E63', tx:'#880e4f', dot:'#E91E63' },
+  F:{ bg:'#e0f2f1', bd:'#009688', tx:'#004d40', dot:'#009688' },
+  G:{ bg:'#f9fbe7', bd:'#8BC34A', tx:'#33691e', dot:'#8BC34A' },
+  H:{ bg:'#e8eaf6', bd:'#3F51B5', tx:'#1a237e', dot:'#3F51B5' },
+  I:{ bg:'#fff8e1', bd:'#FFC107', tx:'#ff6f00', dot:'#FFC107' },
+};
+
+const COLORES_DESC = {
+  CCL:'#1565C0', STEM:'#2E7D32', CD:'#6A1B9A',
+  CPSAA:'#E65100', CC:'#B71C1C', CE:'#00695C',
+  CP:'#006064', CCEC:'#4E342E',
+};
+
+const AREAS_INFANTIL = [
+  { abrev:'CA',  nombre:'Crecimiento en Armonía' },
+  { abrev:'DEE', nombre:'Descubrimiento y Exploración del Entorno' },
+  { abrev:'CRR', nombre:'Comunicación y Representación de la Realidad' },
+];
+const AREAS_PRIMARIA = [
+  { abrev:'CM', nombre:'Conocimiento del Medio Natural, Social y Cultural' },
+  { abrev:'EA', nombre:'Educación Artística' },
+  { abrev:'EF', nombre:'Educación Física' },
+  { abrev:'LC', nombre:'Lengua Castellana y Literatura' },
+  { abrev:'LE', nombre:'Lengua Extranjera' },
+  { abrev:'MA', nombre:'Matemáticas' },
+  { abrev:'VCE', nombre:'Educación en Valores Cívicos y Éticos' },
+  { abrev:'REL', nombre:'Religión Católica' },
+];
+
+/* ─── ESTADO ──────────────────────────────────────────── */
+let curriculoData = [];
+let state = { etapa:null, areaAbrev:null, areaNombre:null, curso:null, compCodigo:null };
+let cacheFirestore = {};
+let filtroEtapaBusq = 'primaria';
+let filtroAreaBusq  = '';
+let filtroCursoBusq = '';
+
+/* ─── AUDIO ───────────────────────────────────────────── */
+const audioTap = new Audio('https://siurotsaberes.web.app/Tap.mp3');
+audioTap.preload = 'auto';
+function playTap(freq = 700) {
+  try {
+    // Preserva la idea de "tonos" distintos por acción variando la velocidad de reproducción
+    // en vez del pitido sintetizado anterior: 700 = normal, más alto = más agudo/rápido.
+    const tap = audioTap.cloneNode();
+    tap.volume = 0.6;
+    tap.playbackRate = Math.min(2, Math.max(0.6, freq / 700));
+    tap.play().catch(() => {});
+  } catch(e) {}
+}
+
+/* ─── TOAST ───────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg, tipo='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ─── HELPERS DOM ─────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+function scrollToEl(el) {
+  // Scroll sutil: solo se mueve lo mínimo necesario para que la sección
+  // recién desplegada entre en la pantalla (nada de saltos grandes ni
+  // alinear siempre arriba del todo, ni asumir una cabecera fija que
+  // aquí, dentro de la web del colegio, no existe).
+  if (!el) return;
+  setTimeout(() => {
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  }, 120);
+}
+function animateCards(parent) {
+  parent.querySelectorAll('.crit-card, .result-card, .comp-card').forEach((c,i) => {
+    c.style.animationDelay = `${i * 40}ms`;
+  });
+}
+
+/* ─── NORMALIZAR TEXTO (búsqueda) ────────────────────── */
+function normalizar(s) {
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '');
+}
+
+/* ─── STEMMER BÁSICO ESPAÑOL ──────────────────────────── */
+// Reduce palabras a su raíz para que "número" encuentre "números", etc.
+function stemES(word) {
+  const w = normalizar(word);
+  if (w.length <= 4) return w;
+  // Quitar plurales y sufijos comunes
+  return w
+    .replace(/aciones$/, 'acion')
+    .replace(/aciones$/, 'acion')
+    .replace(/mientos$/, 'miento')
+    .replace(/miento$/, 'miento')
+    .replace(/idades$/, 'idad')
+    .replace(/idades$/, 'idad')
+    .replace(/mente$/, '')
+    .replace(/ables$/, 'able')
+    .replace(/ibles$/, 'ible')
+    .replace(/ivos$/, 'ivo')
+    .replace(/ivas$/, 'iva')
+    .replace(/ores$/, 'or')
+    .replace(/eras$/, 'era')
+    .replace(/eros$/, 'ero')
+    .replace(/ados$/, 'ado')
+    .replace(/idas$/, 'ida')
+    .replace(/idos$/, 'ido')
+    .replace(/adas$/, 'ada')
+    .replace(/es$/, '')
+    .replace(/os$/, 'o')
+    .replace(/as$/, 'a');
+}
+
+/* ─── RESALTAR TÉRMINO ─────────────────────────────────── */
+function highlight(text, term) {
+  if (!term) return text;
+  const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+/* ─── EXTRAER DESCRIPTORES ────────────────────────────── */
+function extractDescriptors(desc) {
+  const re = /\b(CCEC\d+|CPSAA\d+|STEM\d+|CCL\d*|CL\d+|CD\d*|CC\d*|CE\d*|CP\d*)\b/g;
+  return [...new Set(desc.match(re) || [])];
+}
+function descriptorColor(d) {
+  for (const [key,col] of Object.entries(COLORES_DESC)) {
+    if (d.startsWith(key)) return col;
+  }
+  return '#888';
+}
+
+/* ─── RENDER SABERES ──────────────────────────────────── */
+function limpiarDesc(desc, codigo) {
+  if (!desc) return '';
+  let t = desc;
+  if (codigo && t.startsWith(codigo)) {
+    t = t.slice(codigo.length).replace(/^[\.\s]+/, '');
+  }
+  t = t.replace(/\s*\[[\d,\s]+\]\s*$/g, '').trim();
+  return t;
+}
+
+/* ─── GENERADOR DE FICHAS: CESTA DE SELECCIÓN ─────────── */
+let cesta = [];
+
+function crearItemCesta(doc, s) {
+  return {
+    etapa: doc.etapa,
+    areaAbrev: doc.areaAbrev,
+    areaNombre: doc.area,
+    curso: doc.curso,
+    competenciaCodigo: doc.competenciaCodigo,
+    competenciaDescripcion: doc.competenciaDescripcion,
+    criterioCodigo: doc.criterioCodigo,
+    criterioDescripcion: doc.criterioDescripcion,
+    saberCodigo: s.codigo,
+    saberDescripcion: s.descripcion
+  };
+}
+function claveCesta(item) {
+  return [item.etapa, item.areaAbrev, item.curso, item.criterioCodigo, item.saberCodigo].join('|');
+}
+function estaEnCesta(clave) {
+  return cesta.some(it => claveCesta(it) === clave);
+}
+function cargarCesta() {
+  try { cesta = JSON.parse(localStorage.getItem('siurot_cesta_v1') || '[]'); } catch(e) { cesta = []; }
+}
+function guardarCestaStorage() {
+  localStorage.setItem('siurot_cesta_v1', JSON.stringify(cesta));
+}
+
+const ICONO_CHECK = '<polyline points="20 6 9 17 4 12"/>';
+const ICONO_MAS = '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>';
+
+function botonToggleSaber(doc, s) {
+  const item = crearItemCesta(doc, s);
+  const activo = estaEnCesta(claveCesta(item));
+  const payload = encodeURIComponent(JSON.stringify(item));
+  return `<button type="button" class="saber-toggle ${activo?'activo':''}" data-item="${payload}" aria-label="${activo?'Quitar de la selección':'Añadir a la selección'}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${activo?ICONO_CHECK:ICONO_MAS}</svg>
+  </button>`;
+}
+
+function toggleCestaItem(btn) {
+  const item = JSON.parse(decodeURIComponent(btn.dataset.item));
+  const clave = claveCesta(item);
+  const idx = cesta.findIndex(it => claveCesta(it) === clave);
+  if (idx >= 0) {
+    cesta.splice(idx, 1);
+    btn.classList.remove('activo');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${ICONO_MAS}</svg>`;
+    btn.setAttribute('aria-label', 'Añadir a la selección');
+    playTap(500);
+  } else {
+    cesta.push(item);
+    btn.classList.add('activo');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${ICONO_CHECK}</svg>`;
+    btn.setAttribute('aria-label', 'Quitar de la selección');
+    playTap(900);
+  }
+  guardarCestaStorage();
+  actualizarCestaUI();
+}
+
+function sincronizarTogglesSaberes() {
+  document.querySelectorAll('.saber-toggle[data-item]').forEach(btn => {
+    const item = JSON.parse(decodeURIComponent(btn.dataset.item));
+    const activo = estaEnCesta(claveCesta(item));
+    btn.classList.toggle('activo', activo);
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${activo?ICONO_CHECK:ICONO_MAS}</svg>`;
+    btn.setAttribute('aria-label', activo ? 'Quitar de la selección' : 'Añadir a la selección');
+  });
+}
+
+function actualizarCestaUI() {
+  const n = cesta.length;
+  const barra = $('cesta-flotante');
+  const badge = $('cesta-badge');
+  $('cesta-flotante-count').textContent = `${n} elemento${n!==1?'s':''} seleccionado${n!==1?'s':''}`;
+  barra.classList.toggle('visible', n > 0);
+  if (n > 0) { badge.style.display = 'flex'; badge.textContent = n; }
+  else { badge.style.display = 'none'; }
+  if ($('panel-generador').classList.contains('active')) renderPanelGenerador();
+}
+
+function irAGenerador() {
+  document.querySelectorAll('.nav-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  const tab = document.querySelector('.nav-tab[data-panel="generador"]');
+  tab.classList.add('active'); tab.setAttribute('aria-selected','true');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $('panel-generador').classList.add('active');
+  renderPanelGenerador();
+  const appRoot = document.getElementById('siurot-app');
+  if (appRoot) appRoot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function renderSaberesConToggle(doc, areaAbrev) {
+  const saberes = doc.saberes;
+  if (!saberes || saberes.length === 0) return '';
+  const sinBloque = areaAbrev === 'REL' || !BLOQUES[areaAbrev];
+
+  if (sinBloque) {
+    return `<div class="saberes-simple">${
+      saberes.map(s => `
+        <div class="saber-simple-item">
+          <span class="saber-simple-dot">◆</span>
+          <div class="saber-content-row"><span>${limpiarDesc(s.descripcion, s.codigo)}</span></div>
+          ${botonToggleSaber(doc, s)}
+        </div>`).join('')
+    }</div>`;
+  }
+
+  // Agrupar por bloque
+  const grupos = {};
+  for (const s of saberes) {
+    const letra = s.bloqueLetra || (s.codigo ? s.codigo.split('.')[2] : '?');
+    if (!grupos[letra]) grupos[letra] = [];
+    grupos[letra].push(s);
+  }
+
+  return `<div class="saberes-wrap">
+    <div class="saberes-titulo">Saberes básicos</div>
+    ${Object.entries(grupos).map(([letra, items]) => {
+      const c = COLORES_BLOQUE[letra] || { bg:'#f5f5f5', bd:'#999', tx:'#333', dot:'#999' };
+      const bloqueNombre = BLOQUES[areaAbrev]?.[letra] || `Bloque ${letra}`;
+      return `
+        <div class="bloque-grupo" style="border-color:${c.bd};background:${c.bg}">
+          <div class="bloque-head" style="background:${c.bg}">
+            <div class="bloque-letra" style="background:${c.bd}">${letra}</div>
+            <div class="bloque-nombre" style="color:${c.tx}">${bloqueNombre}</div>
+          </div>
+          <div class="saber-lista">
+            ${items.map(s => `
+              <div class="saber-item">
+                <div class="saber-content-row">
+                  <div class="saber-dot" style="background:${c.dot}"></div>
+                  <div class="saber-content">
+                    <div class="saber-desc">${limpiarDesc(s.descripcion, s.codigo)}</div>
+                    ${s.codigo ? `<div class="saber-codigo">${s.codigo}</div>` : ''}
+                  </div>
+                </div>
+                ${botonToggleSaber(doc, s)}
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ─── LIMPIAR TEXTO CRITERIO ──────────────────────────── */
+function limpiarCriterio(desc, codigo) {
+  if (!desc) return '';
+  let t = desc;
+  // Quitar el código al inicio si está incluido (ej: "1.1. Texto..." → "Texto...")
+  if (codigo) {
+    const re = new RegExp('^' + codigo.replace('.', '\\.') + '[\\s\\.]+');
+    t = t.replace(re, '');
+  }
+  // Quitar corchetes con números [2], [11], [1, 2], etc.
+  t = t.replace(/\s*\[[\d,\s]+\]/g, '');
+  // Quitar descriptores sueltos al final (CL5, CCL1, etc.)
+  t = t.replace(/[\s,\.]*\b(CCEC\d*|CPSAA\d*|STEM\d*|CCL\d*|CL\d*|CD\d*|CC\d*|CE\d*|CP\d*)\b[\s,\.]*/g, ' ');
+  // Limpiar puntuación residual
+  t = t.replace(/[,\s]+\./g, '.').replace(/\.\s*\./g, '.').replace(/,\s*$/, '').replace(/\s+/g, ' ').trim();
+  return t.replace(/[.,]\s*$/, '') + '.';
+}
+
+/* ─── RENDER CRITERIO CARD ────────────────────────────── */
+function renderCriterioCard(doc, areaAbrev, idx) {
+  const id = doc.id || `${doc.criterioCodigo}-${idx}`;
+  return `
+    <div class="crit-card" data-id="${id}" style="animation-delay:${idx*45}ms">
+      <div class="crit-head">
+        <div class="crit-info">
+          <span class="crit-codigo">${doc.criterioCodigo}</span>
+          <div class="crit-texto">${limpiarCriterio(doc.criterioDescripcion, doc.criterioCodigo)}</div>
+        </div>
+      </div>
+      ${renderSaberesConToggle(doc, areaAbrev)}
+    </div>`;
+}
+
+/* ─── NAVEGADOR: PASO 1 — Etapa ──────────────────────── */
+function initChipsEtapa() {
+  document.querySelectorAll('#chips-etapa .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playTap();
+      const val = btn.dataset.val;
+      document.querySelectorAll('#chips-etapa .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      resetDesde('etapa');
+      state.etapa = val;
+      renderAreas();
+      scrollToEl($('step-area'));
+    });
+  });
+}
+
+/* ─── NAVEGADOR: PASO 2 — Áreas ─────────────────────── */
+function renderAreas() {
+  const lista = state.etapa === 'infantil' ? AREAS_INFANTIL : AREAS_PRIMARIA;
+  const cont = $('chips-area');
+  cont.innerHTML = lista.map(a => `
+    <button class="chip" data-abrev="${a.abrev}" data-nombre="${a.nombre}" aria-label="${a.nombre}">
+      <span class="chip-abrev">${a.abrev}</span>${a.nombre}
+    </button>`).join('');
+  $('step-area').style.display = '';
+
+  cont.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playTap();
+      cont.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      resetDesde('area');
+      state.areaAbrev  = btn.dataset.abrev;
+      state.areaNombre = btn.dataset.nombre;
+      renderCursos();
+      scrollToEl($('step-curso'));
+    });
+  });
+}
+
+/* ─── NAVEGADOR: PASO 3 — Cursos ─────────────────────── */
+function renderCursos() {
+  const cont = $('chips-curso');
+  let cursos = [];
+
+  if (state.etapa === 'infantil') {
+    cursos = [{ val:'2º Ciclo Infantil (3, 4 y 5 años)', label:'2º Ciclo de Infantil (3, 4 y 5 años)' }];
+  } else if (state.areaAbrev === 'REL') {
+    cursos = [
+      { val:'Primer Ciclo Primaria (1º y 2º)',   label:'1er Ciclo (1º y 2º)' },
+      { val:'Segundo Ciclo Primaria (3º y 4º)',  label:'2º Ciclo (3º y 4º)' },
+      { val:'Tercer Ciclo Primaria (5º y 6º)',   label:'3er Ciclo (5º y 6º)' },
+    ];
+  } else if (state.areaAbrev === 'VCE') {
+    cursos = [
+      { val:'6º Primaria', label:'6º' },
+    ];
+  } else {
+    cursos = ['1º','2º','3º','4º','5º','6º'].map(c => ({
+      val:`${c} Primaria`, label:c
+    }));
+  }
+
+  cont.innerHTML = cursos.map(c =>
+    `<button class="chip" data-val="${c.val}" aria-label="Curso ${c.label}">${c.label}</button>`
+  ).join('');
+  $('step-curso').style.display = '';
+
+  cont.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      playTap();
+      cont.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      resetDesde('curso');
+      state.curso = btn.dataset.val;
+      await renderCompetencias();
+      scrollToEl($('step-comp'));
+    });
+  });
+}
+
+/* ─── NAVEGADOR: PASO 4 — Competencias ──────────────── */
+async function renderCompetencias() {
+  const cont = $('comps-lista');
+  cont.innerHTML = '<div class="skeleton skeleton-card"></div>'.repeat(3);
+  $('step-comp').style.display = '';
+
+  const docs = await fetchDocs();
+  if (!docs.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="empty-title">Sin datos</div>
+      <div class="empty-desc">No se encontraron registros para esta combinación. Comprueba que los datos están importados en Firestore.</div>
+    </div>`;
+    return;
+  }
+
+  // Agrupar por competencia
+  const comps = {};
+  for (const d of docs) {
+    if (!comps[d.competenciaCodigo]) {
+      comps[d.competenciaCodigo] = d.competenciaDescripcion;
+    }
+  }
+
+  cont.innerHTML = Object.entries(comps).map(([cod, desc]) => {
+    const descriptors = extractDescriptors(desc);
+    // Paso 1: eliminar descriptores completos (con o sin separador previo)
+    let textoLimpio = desc
+      .replace(/[\s,]*\b(CCEC\d+|CPSAA\d+|STEM\d+|CCL\d*|CL\d+|CD\d*|CC\d*|CE\d*|CP\d*)\b/g, '')
+    // Paso 2: eliminar fragmentos que quedan pegados al texto (ej: "textoEC1EC3", "SAA5")
+      .replace(/([a-záéíóúüñA-Z])(EC\d+)+/g, '$1')
+      .replace(/([a-záéíóúüñA-Z])(SAA\d+)/g, '$1')
+      .replace(/\bSAA\d+/g, '')
+      .replace(/\s*\[[\d,\s]+\]\s*/g, ' ')
+    // Paso 3: limpiar puntuación residual
+      .replace(/,(\s*,)+/g, ',')
+      .replace(/[,\s]+\./g, '.')
+      .replace(/\.\s*\./g, '.')
+      .replace(/,\s*$/,'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .replace(/[.,]\s*$/,'');
+    return `
+      <div class="comp-card" data-cod="${cod}" role="button" tabindex="0" aria-label="Competencia ${cod}">
+        <div class="comp-header">
+          <div class="comp-num">${cod}</div>
+          <div class="comp-text">${textoLimpio}.</div>
+        </div>
+        ${descriptors.length ? `<div class="comp-descriptores">
+          ${descriptors.map(d => `<span class="desc-chip" style="background:${descriptorColor(d)}">${d}</span>`).join('')}
+        </div>` : ''}
+      </div>`;
+  }).join('');
+
+  animateCards(cont);
+
+  cont.querySelectorAll('.comp-card').forEach(card => {
+    const activate = () => {
+      playTap(800);
+      cont.querySelectorAll('.comp-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      state.compCodigo = card.dataset.cod;
+      renderCriteriosFiltrados(docs);
+      scrollToEl($('step-criterios'));
+    };
+    card.addEventListener('click', activate);
+    card.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') activate(); });
+  });
+}
+
+/* ─── FETCH DOCS ──────────────────────────────────────── */
+async function fetchDocs() {
+  const cacheKey = `${state.etapa}|${state.areaAbrev}|${state.curso}`;
+  if (cacheFirestore[cacheKey]) return cacheFirestore[cacheKey];
+
+  try {
+    const docs = curriculoData.filter(d =>
+      d.etapa === state.etapa &&
+      d.areaAbrev === state.areaAbrev &&
+      d.curso === state.curso
+    );
+    cacheFirestore[cacheKey] = docs;
+    return docs;
+  } catch(e) {
+    console.error(e);
+    showToast('Error al leer el currículo', 'error');
+    return [];
+  }
+}
+
+/* ─── RENDER CRITERIOS FILTRADOS ──────────────────────── */
+function renderCriteriosFiltrados(allDocs) {
+  const docs = allDocs.filter(d => d.competenciaCodigo === state.compCodigo);
+  const cont = $('criterios-lista');
+
+  if (!docs.length) {
+    cont.innerHTML = '<div class="empty-desc" style="padding:20px 0;color:var(--texto-2)">No hay criterios para esta competencia.</div>';
+    $('step-criterios').style.display = '';
+    return;
+  }
+
+  cont.innerHTML = docs.map((d,i) => renderCriterioCard(d, state.areaAbrev, i)).join('');
+  $('step-criterios').style.display = '';
+  animateCards(cont);
+}
+
+/* ─── RESET ESTADO ────────────────────────────────────── */
+function resetDesde(nivel) {
+  if (nivel === 'etapa') {
+    state.areaAbrev = state.areaNombre = state.curso = state.compCodigo = null;
+    $('step-area').style.display   = 'none';
+    $('step-curso').style.display  = 'none';
+    $('step-comp').style.display   = 'none';
+    $('step-criterios').style.display = 'none';
+  } else if (nivel === 'area') {
+    state.curso = state.compCodigo = null;
+    $('step-curso').style.display  = 'none';
+    $('step-comp').style.display   = 'none';
+    $('step-criterios').style.display = 'none';
+  } else if (nivel === 'curso') {
+    state.compCodigo = null;
+    $('step-comp').style.display   = 'none';
+    $('step-criterios').style.display = 'none';
+  }
+}
+
+/* ─── BREADCRUMB ──────────────────────────────────────── */
+/* ─── IR AL INICIO ────────────────────────────────────── */
+function irAlInicio() {
+  document.querySelectorAll('#chips-etapa .chip').forEach(b => b.classList.remove('active'));
+  state = { etapa:null, areaAbrev:null, areaNombre:null, curso:null, compCodigo:null };
+  resetDesde('etapa');
+  // Activar tab Navegador
+  document.querySelectorAll('.nav-tab[data-panel]').forEach(t => {
+    t.classList.toggle('active', t.dataset.panel === 'navegador');
+    t.setAttribute('aria-selected', t.dataset.panel === 'navegador' ? 'true' : 'false');
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $('panel-navegador').classList.add('active');
+  // Sin scroll automático: dentro de la web del colegio, "top:0" saltaría
+  // al principio de toda la página de WordPress, no solo de la app.
+}
+
+// Header: logo y título llevan al inicio
+$('header-logo').addEventListener('click', () => { playTap(); irAlInicio(); });
+$('header-title-wrap').addEventListener('click', () => { playTap(); irAlInicio(); });
+
+// Tab Limpiar
+$('btn-reiniciar-tab').addEventListener('click', () => { playTap(); irAlInicio(); });
+
+/* ─── MODAL DE CONFIRMACIÓN (sustituye a confirm() nativo) ────── */
+let modalResolve = null;
+function mostrarConfirmacion(mensaje, textoBoton = 'Confirmar') {
+  return new Promise(resolve => {
+    modalResolve = resolve;
+    $('modal-mensaje').textContent = mensaje;
+    document.querySelector('[data-action="modal-confirmar"]').textContent = textoBoton;
+    $('modal-overlay').classList.add('visible');
+  });
+}
+function resolverModal(resultado) {
+  $('modal-overlay').classList.remove('visible');
+  if (modalResolve) { modalResolve(resultado); modalResolve = null; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   GENERADOR DE FICHAS
+   ───────────────────────────────────────────────────────── */
+
+const TAXONOMIA_NEAE = [
+  { grupo: "NEE (art. 73 LOE-LOMLOE)", hijos: [
+      "Discapacidad intelectual","Discapacidad motórica o física","Discapacidad visual",
+      "Discapacidad auditiva","TEA","Trastornos graves de conducta","Pluridiscapacidad"
+  ]},
+  { item: "Retraso madurativo" },
+  { item: "Trastornos del desarrollo del lenguaje y la comunicación" },
+  { grupo: "Trastornos de atención o de aprendizaje", hijos: ["DEA","TDAH"] },
+  { item: "Altas capacidades intelectuales" },
+  { item: "Incorporación tardía al sistema educativo" },
+  { item: "Desconocimiento grave de la lengua de aprendizaje" },
+  { item: "Situación de vulnerabilidad socioeducativa" },
+  { item: "Condiciones personales o de historia escolar" }
+];
+
+// Fuera del árbol NEAE a propósito: no es una categoría oficial del art. 71.2/73 LOE-LOMLOE,
+// sino alumnado que simplemente no llega al ritmo del grupo sin que exista diagnóstico alguno.
+const OTRAS_SITUACIONES = [
+  "Necesita refuerzo educativo (sin diagnóstico NEAE)"
+];
+
+const TIPOS_FICHA = [
+  "Ficha de clase","Ficha manipulativa","Refuerzo","Ampliación",
+  "Trabajo cooperativo","Investigación","Evaluación",
+  "Proyecto (ABP)","Situación de aprendizaje (SdA)",
+  "Caza del tesoro","Lámina para colorear"
+];
+
+// Tipos cuya salida NO sigue el patrón Guía/Ficha/Evaluación de construirPromptBloque
+// (actualmente solo la lámina para colorear, que genera un prompt de imagen de una sola pieza)
+const TIPOS_FICHA_PROMPT_IMAGEN = ["Lámina para colorear"];
+
+/* ─── ALUMNADO DEL GRUPO ACTIVO ────────────────────────── */
+let genAlumnos = [];
+let genAlumnoContador = 0;
+let genAlumnoAbiertoId = null;
+let grupoActivoId = null;
+let bloqueAbiertoKey = null;
+
+function genAnadirAlumno() {
+  genAlumnoContador++;
+  const al = { id: 'al_'+Date.now()+'_'+genAlumnoContador, etiqueta: 'Alumno '+(genAlumnos.length+1), tags: [], notas: '' };
+  genAlumnos.push(al);
+  genAlumnoAbiertoId = al.id;
+  renderGenAlumnos();
+}
+function genQuitarAlumno(id) {
+  genAlumnos = genAlumnos.filter(a => a.id !== id);
+  if (genAlumnoAbiertoId === id) genAlumnoAbiertoId = null;
+  renderGenAlumnos();
+}
+function genToggleAlumno(id) {
+  genAlumnoAbiertoId = (genAlumnoAbiertoId === id) ? null : id;
+  renderGenAlumnos();
+}
+function genActualizarAlumno(id, campo, valor) {
+  const al = genAlumnos.find(a => a.id === id);
+  if (al) al[campo] = valor;
+}
+// Punto de partida editable, no una regla fija: apoyos habituales para cada categoría,
+// que el profesorado debe ajustar o borrar según el alumno concreto que tenga delante.
+const SUGERENCIAS_APOYOS = {
+  "Discapacidad intelectual": "instrucciones muy concretas y secuenciadas paso a paso, apoyo visual, tiempos amplios, reducir la cantidad de información simultánea",
+  "Discapacidad motórica o física": "adaptar el soporte de respuesta a su movilidad (tamaño de letra, espacio para escribir, alternativas orales o señalando), evitar depender de precisión manual fina",
+  "Discapacidad visual": "texto con contraste alto y tamaño ampliado, describir en palabras cualquier apoyo visual, evitar depender de colores para diferenciar información",
+  "Discapacidad auditiva": "apoyo visual y escrito de toda instrucción oral, evitar actividades que dependan solo de escuchar, contacto visual antes de hablarle",
+  "TEA": "anticipación de los cambios y de la estructura de la sesión, instrucciones visuales paso a paso, tiempos de espera antes de responder, opción de responder señalando o dibujando en vez de hablar",
+  "Trastornos graves de conducta": "objetivos divididos en pasos muy pequeños con refuerzo inmediato de cada logro, anticipar la actividad y sus normas, ofrecer alternativas de pausa o movimiento controlado",
+  "Pluridiscapacidad": "adaptar el canal de acceso y de respuesta a sus posibilidades concretas, simplificar la tarea al paso esencial, apoyo físico o verbal continuo",
+  "Retraso madurativo": "instrucciones más simples y cortas, ejemplos resueltos antes de pedir autonomía, más tiempo y repetición de las explicaciones",
+  "Trastornos del desarrollo del lenguaje y la comunicación": "apoyo visual junto a toda instrucción oral o escrita, vocabulario sencillo, permitir respuestas no verbales (señalar, dibujar)",
+  "DEA": "apoyo específico según el área afectada (lectura, escritura o cálculo): más tiempo, texto espaciado o con apoyo silábico, o soporte para el cálculo si la dificultad es matemática",
+  "TDAH": "tareas divididas en pasos cortos y visibles, instrucciones breves repetidas, permitir pausas de movimiento, minimizar distractores en el enunciado",
+  "Altas capacidades intelectuales": "retos de mayor profundidad o abstracción sin más cantidad de ejercicios, autonomía para elegir el camino de resolución, evitar repetir lo que ya domina",
+  "Incorporación tardía al sistema educativo": "apoyo visual y vocabulario clave explicado, evitar dar por hecho referentes culturales o escolares previos, aceptar respuestas no verbales mientras adquiere el idioma",
+  "Desconocimiento grave de la lengua de aprendizaje": "vocabulario básico explicado con apoyo visual, instrucciones cortas y repetidas, aceptar respuestas gestuales, gráficas o en su lengua materna cuando sea posible",
+  "Situación de vulnerabilidad socioeducativa": "no dar por hecho recursos materiales en casa, evitar tareas que dependan de ayuda familiar no garantizada, reforzar la sensación de logro en el aula",
+  "Condiciones personales o de historia escolar": "revisar sin prejuicios el nivel de partida real, evitar comparaciones con el ritmo esperado del curso, priorizar la confianza y la participación",
+  "Necesita refuerzo educativo (sin diagnóstico NEAE)": "más ejemplos resueltos antes de la autonomía, pasos intermedios explícitos, comprobación frecuente de que sigue la tarea"
+};
+
+function genToggleTag(id, tag, checked) {
+  const al = genAlumnos.find(a => a.id === id);
+  if (!al) return;
+  if (checked && !al.tags.includes(tag)) {
+    al.tags.push(tag);
+    const sugerencia = SUGERENCIAS_APOYOS[tag];
+    if (sugerencia && !al.notas.includes(sugerencia)) {
+      al.notas = al.notas ? `${al.notas}; ${sugerencia}` : sugerencia;
+      renderGenAlumnos();
+      return;
+    }
+  }
+  if (!checked) al.tags = al.tags.filter(t => t !== tag);
+}
+function renderTaxonomiaGen(al) {
+  const arbolNeae = TAXONOMIA_NEAE.map(entrada => {
+    if (entrada.item) {
+      return `<label class="gen-check-item">
+        <input type="checkbox" ${al.tags.includes(entrada.item)?'checked':''} data-onchange="gen-tag" data-id="${al.id}" data-tag="${esc(entrada.item)}">
+        ${entrada.item}
+      </label>`;
+    }
+    return `<div>
+      <div class="gen-neae-grupo-titulo">${entrada.grupo}</div>
+      <div class="gen-neae-hijos">
+        ${entrada.hijos.map(h => `
+          <label class="gen-check-item">
+            <input type="checkbox" ${al.tags.includes(h)?'checked':''} data-onchange="gen-tag" data-id="${al.id}" data-tag="${esc(h)}">
+            ${h}
+          </label>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const otras = `
+    <div class="gen-neae-grupo-titulo" style="margin-top:14px;">Otras situaciones (no son NEAE)</div>
+    <p style="font-size:11px; color:var(--texto-2); margin:0 0 6px;">Sin diagnóstico ni evaluación psicopedagógica de por medio — no se le aplican las medidas específicas del art. 71.2 LOE-LOMLOE.</p>
+    <div class="gen-neae-hijos">
+      ${OTRAS_SITUACIONES.map(o => `
+        <label class="gen-check-item">
+          <input type="checkbox" ${al.tags.includes(o)?'checked':''} data-onchange="gen-tag" data-id="${al.id}" data-tag="${esc(o)}">
+          ${o}
+        </label>`).join('')}
+    </div>`;
+
+  return arbolNeae + otras;
+}
+function renderGenAlumnos() {
+  const cont = $('gen-lista-alumnos');
+  if (!cont) return;
+  if (genAlumnos.length === 0) {
+    cont.innerHTML = '<p style="color:var(--texto-2);font-size:12.5px;">Ningún alumno añadido todavía.</p>';
+    return;
+  }
+  cont.innerHTML = genAlumnos.map(al => {
+    const abierto = al.id === genAlumnoAbiertoId;
+    const resumen = al.tags.length ? al.tags.join(', ') : 'sin características añadidas';
+    return `
+    <div class="gen-alumno-card ${abierto?'abierto':''}">
+      <div class="gen-alumno-head" data-action="gen-toggle-alumno" data-id="${al.id}">
+        <input type="text" value="${esc(al.etiqueta)}" data-action="gen-stop" data-onchange="gen-etiqueta" data-id="${al.id}">
+        ${!abierto ? `<span class="gen-alumno-resumen">${esc(resumen)}</span>` : ''}
+        <button class="gen-item-quitar" data-action="gen-quitar-alumno" data-id="${al.id}">Quitar</button>
+      </div>
+      ${abierto ? `
+        <div class="gen-alumno-body">
+          ${renderTaxonomiaGen(al)}
+          <textarea class="gen-textarea" style="margin-top:8px;" placeholder="¿Qué necesita en la práctica, más allá del diagnóstico? Ej: anticipación, apoyo visual, más tiempo... (se autocompleta al marcar una categoría — edítalo o bórralo libremente)" data-onchange="gen-notas" data-id="${al.id}">${esc(al.notas)}</textarea>
+        </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ─── PERFILES DE GRUPO GUARDADOS (localStorage) ─────────── */
+function cargarGruposGen() {
+  try { return JSON.parse(localStorage.getItem('siurot_grupos_v1') || '[]'); } catch(e) { return []; }
+}
+function guardarGruposStorage(grupos) {
+  localStorage.setItem('siurot_grupos_v1', JSON.stringify(grupos));
+}
+function renderGruposGuardados() {
+  const grupos = cargarGruposGen();
+  const cont = $('gen-grupos-guardados');
+  if (!cont) return;
+  if (grupos.length === 0) {
+    cont.innerHTML = '<p style="color:var(--texto-2);font-size:12.5px;">Ningún grupo guardado todavía.</p>';
+    return;
+  }
+  cont.innerHTML = grupos.map(g => `
+    <div class="gen-grupo-chip ${g.id===grupoActivoId?'activo':''}">
+      <span data-action="gen-cargar-grupo" data-id="${g.id}" style="cursor:pointer;">${esc(g.nombre)}</span>
+      <button data-action="gen-eliminar-grupo" data-id="${g.id}" title="Eliminar">✕</button>
+    </div>`).join('');
+}
+function genNuevoGrupo() {
+  grupoActivoId = null;
+  genAlumnos = [];
+  $('gen-nombre-grupo').value = '';
+  $('gen-num-alumnos').value = '';
+  $('gen-descripcion-grupo').value = '';
+  if ($('gen-observaciones')) $('gen-observaciones').value = '';
+  renderGenAlumnos();
+  renderGruposGuardados();
+}
+function genGuardarGrupo() {
+  const nombre = $('gen-nombre-grupo').value.trim();
+  if (!nombre) { showToast('Ponle un nombre a este grupo antes de guardarlo.', 'error'); return; }
+  const grupos = cargarGruposGen();
+  const datosGrupo = {
+    id: grupoActivoId || ('grp_'+Date.now()),
+    nombre,
+    edad: $('gen-campo-edad').style.display !== 'none' ? $('gen-edad').value : null,
+    numAlumnos: $('gen-num-alumnos').value,
+    descripcion: $('gen-descripcion-grupo').value,
+    alumnos: genAlumnos
+  };
+  const idx = grupos.findIndex(g => g.id === datosGrupo.id);
+  if (idx >= 0) grupos[idx] = datosGrupo; else grupos.push(datosGrupo);
+  guardarGruposStorage(grupos);
+  grupoActivoId = datosGrupo.id;
+  renderGruposGuardados();
+  showToast('Grupo guardado: ' + nombre, 'success');
+}
+function genCargarGrupo(id) {
+  const grupos = cargarGruposGen();
+  const g = grupos.find(x => x.id === id);
+  if (!g) return;
+  grupoActivoId = g.id;
+  $('gen-nombre-grupo').value = g.nombre;
+  $('gen-num-alumnos').value = g.numAlumnos || '';
+  $('gen-descripcion-grupo').value = g.descripcion || '';
+  if (g.edad) $('gen-edad').value = g.edad;
+  genAlumnos = g.alumnos || [];
+  renderGenAlumnos();
+  renderGruposGuardados();
+}
+async function genEliminarGrupo(id) {
+  const ok = await mostrarConfirmacion('¿Eliminar este grupo guardado? No se puede deshacer.', 'Eliminar');
+  if (!ok) return;
+  let grupos = cargarGruposGen();
+  grupos = grupos.filter(g => g.id !== id);
+  guardarGruposStorage(grupos);
+  if (grupoActivoId === id) genNuevoGrupo();
+  renderGruposGuardados();
+}
+function genExportarGrupos() {
+  const grupos = cargarGruposGen();
+  if (grupos.length === 0) { showToast('No hay grupos guardados para exportar.', 'error'); return; }
+  const blob = new Blob([JSON.stringify(grupos, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'grupos-siurotcurriculo.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function genImportarGrupos(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const importados = JSON.parse(reader.result);
+      if (!Array.isArray(importados)) throw new Error('formato');
+      const actuales = cargarGruposGen();
+      for (const g of importados) {
+        const existente = actuales.find(a => a.nombre === g.nombre);
+        if (existente) {
+          const sobrescribir = await mostrarConfirmacion(`Ya existe un grupo llamado "${g.nombre}". ¿Sobrescribirlo? (Cancelar = mantener ambos)`, 'Sobrescribir');
+          if (sobrescribir) { g.id = existente.id; const i = actuales.findIndex(a=>a.id===existente.id); actuales[i] = g; }
+          else { g.id = 'grp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); g.nombre += ' (importado)'; actuales.push(g); }
+        } else {
+          if (!g.id) g.id = 'grp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+          actuales.push(g);
+        }
+      }
+      guardarGruposStorage(actuales);
+      renderGruposGuardados();
+      showToast('Grupos importados correctamente.', 'success');
+    } catch(e) { showToast('El archivo no tiene un formato válido.', 'error'); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ─── TIPO DE FICHA ───────────────────────────────────────── */
+function poblarTiposFichaGen() {
+  const cont = $('gen-tipos-ficha');
+  if (!cont || cont.children.length) return; // no repoblar si ya hay selección hecha
+  cont.innerHTML = TIPOS_FICHA.map((t,i) => `
+    <label class="gen-tipo-item">
+      <input type="radio" name="gen-tipo-ficha" value="${t}" ${i===0?'checked':''}>
+      ${t}
+    </label>`).join('');
+}
+
+/* ─── PANEL: RENDER PRINCIPAL ─────────────────────────────── */
+function agruparCesta() {
+  const grupos = {};
+  cesta.forEach(it => {
+    const key = `${it.etapa}|${it.areaAbrev}|${it.curso}`;
+    if (!grupos[key]) grupos[key] = { key, etapa: it.etapa, areaAbrev: it.areaAbrev, areaNombre: it.areaNombre, curso: it.curso, items: [] };
+    grupos[key].items.push(it);
+  });
+  return grupos;
+}
+
+function renderPanelGenerador() {
+  renderGruposGuardados();
+  renderGenAlumnos();
+  poblarTiposFichaGen();
+
+  $('gen-campo-edad').style.display = cesta.some(it => it.etapa === 'infantil') ? '' : 'none';
+
+  const vacio = $('gen-cesta-vacia');
+  const cont = $('gen-cesta-bloques');
+  const resto = $('gen-resto');
+
+  if (cesta.length === 0) {
+    vacio.style.display = '';
+    cont.innerHTML = '';
+    resto.style.display = 'none';
+    return;
+  }
+  vacio.style.display = 'none';
+  resto.style.display = '';
+
+  const grupos = agruparCesta();
+  cont.innerHTML = Object.values(grupos).map(g => {
+    const abierto = g.key === bloqueAbiertoKey;
+    return `
+    <div class="gen-bloque ${abierto?'abierto':''}" data-key="${g.key}">
+      <div class="gen-bloque-head" data-action="gen-toggle-bloque" data-key="${g.key}">
+        <div class="gen-bloque-titulo-wrap">
+          <div class="gen-bloque-titulo">${esc(g.areaNombre)} · ${esc(g.curso)}</div>
+          <div class="gen-bloque-count">${g.items.length} elemento${g.items.length!==1?'s':''}</div>
+        </div>
+        <div class="gen-bloque-acciones">
+          <button class="btn-mini" data-action="gen-vaciar-bloque" data-key="${g.key}">Vaciar</button>
+          <button class="btn-mini primario" data-action="gen-generar-bloque" data-key="${g.key}">Generar solo este</button>
+        </div>
+      </div>
+      <div class="gen-bloque-items">
+        ${g.items.map(it => `
+          <div class="gen-bloque-item">
+            <span><strong>${esc(it.saberCodigo)}</strong> — ${esc(it.saberDescripcion)}</span>
+            <button class="gen-item-quitar" data-action="gen-quitar-item" data-key="${g.key}" data-saber="${esc(it.saberCodigo)}" data-criterio="${esc(it.criterioCodigo)}">Quitar</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBloqueAbierto(key) {
+  bloqueAbiertoKey = (bloqueAbiertoKey === key) ? null : key;
+  renderPanelGenerador();
+}
+async function genVaciarBloque(key) {
+  const ok = await mostrarConfirmacion('¿Vaciar todos los elementos de este bloque? No se puede deshacer.', 'Vaciar');
+  if (!ok) return;
+  cesta = cesta.filter(it => `${it.etapa}|${it.areaAbrev}|${it.curso}` !== key);
+  guardarCestaStorage();
+  actualizarCestaUI();
+  renderPanelGenerador();
+  sincronizarTogglesSaberes();
+}
+function genQuitarItem(key, saberCodigo, criterioCodigo) {
+  cesta = cesta.filter(it => !(`${it.etapa}|${it.areaAbrev}|${it.curso}` === key && it.saberCodigo === saberCodigo && it.criterioCodigo === criterioCodigo));
+  guardarCestaStorage();
+  actualizarCestaUI();
+  renderPanelGenerador();
+  sincronizarTogglesSaberes();
+}
+
+/* ─── CONSTRUCCIÓN DEL PROMPT ─────────────────────────────── */
+function limpiarComp(desc) {
+  if (!desc) return '';
+  return desc
+    .replace(/[\s,]*\b(CCEC\d+|CPSAA\d+|STEM\d+|CCL\d*|CL\d+|CD\d*|CC\d*|CE\d*|CP\d*)\b/g, '')
+    .replace(/([a-záéíóúüñA-Z])(EC\d+)+/g, '$1')
+    .replace(/([a-záéíóúüñA-Z])(SAA\d+)/g, '$1')
+    .replace(/\bSAA\d+/g, '')
+    .replace(/\s*\[[\d,\s]+\]\s*/g, ' ')
+    .replace(/,(\s*,)+/g, ',')
+    .replace(/[,\s]+\./g, '.')
+    .replace(/\.\s*\./g, '.')
+    .replace(/,\s*$/,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .replace(/[.,]\s*$/,'') + '.';
+}
+
+// Los descriptores del perfil de salida (CCL1, STEM2, CCEC3...) van embebidos en el texto
+// de la competencia. limpiarComp() los borra para que se lea bien; esta función los rescata
+// antes de que se pierdan, para pasárselos a la IA como variable propia.
+function extraerDescriptoresPerfilSalida(desc) {
+  if (!desc) return [];
+  const encontrados = desc.match(/\b(CCEC\d+|CPSAA\d+|STEM\d+|CCL\d+|CD\d+|CC\d+|CE\d+|CP\d+)\b/g) || [];
+  return [...new Set(encontrados)];
+}
+
+/* ─── TIPOLOGÍA MODULAR: solo se envía el bloque del tipo elegido, nunca los demás ─── */
+function elegirContextosSugeridos(n = 4) {
+  const pool = [
+    'la biblioteca escolar', 'un mercadillo solidario', 'una excursión', 'el parque del barrio',
+    'el supermercado', 'el comedor escolar', 'un campeonato deportivo', 'la radio escolar',
+    'el huerto escolar', 'un museo', 'una feria de ciencias', 'el aniversario del colegio',
+    'una mudanza de aula', 'la cafetería del colegio', 'un concurso de recetas'
+  ];
+  const copia = [...pool];
+  const elegidos = [];
+  for (let i = 0; i < n && copia.length; i++) {
+    const idx = Math.floor(Math.random() * copia.length);
+    elegidos.push(copia.splice(idx, 1)[0]);
+  }
+  return elegidos.join(', ');
+}
+
+function bloqueTipologia(tipoFicha) {
+  const contextos = elegirContextosSugeridos();
+  const bloques = {
+    'Ficha de clase': `Secuencia: Activación → Desarrollo → Consolidación.`,
+    'Refuerzo': `Secuencia: Activación → Desarrollo → Consolidación, con más pasos guiados y ejemplos resueltos que en una ficha estándar. El diseño debe aislar el micro-paso concreto que impide el avance de este grupo (identificado en el punto 2 de la Capa 0: error más probable) — no lo generes de forma abstracta, dilo explícitamente en la guía. Prohibido rebajar la complejidad de un aspecto que no es la barrera real: si la dificultad es matemática, no simplifiques el texto; si la dificultad es lectora, simplifica el texto pero mantén el reto matemático intacto.`,
+    'Ampliación': `Secuencia: Activación → Desarrollo → Consolidación, con más autonomía y profundidad — nunca más cantidad de ejercicios. Prohibido adelantar contenidos del currículo de cursos superiores: eso es aceleración, no ampliación competencial. La profundización debe lograrse transfiriendo el saber a un contexto interdisciplinar, exigiendo que el alumnado elija por sí mismo la estrategia a usar sin que se le indique, o haciendo que genere sus propios datos o condiciones del problema.`,
+    'Ficha manipulativa': `Incluye una sección "Materiales del aula necesarios" e interacción física paso a paso con esos materiales: el alumnado debe manipular, mover, construir o transformar algo físico para avanzar en la actividad, no limitarse a observarlo o dibujarlo. Diseña el material asumiendo que se imprime en un folio DIN-A4: indica explícitamente los cortes con la marca "[---CORTAR AQUÍ---]", los dobleces con "[===DOBLAR AQUÍ===]", y si hace falta pegamento o tijeras. Minimiza las piezas sueltas para evitar que se pierdan. Incluye en la Guía una "Fase 0: Preparación del material" con lo que el docente debe recortar o montar antes de empezar la sesión.
+  **Prueba de autenticidad obligatoria (Manipulativa)**: si la actividad se resolvería igual de bien sin tocar ningún material (por ejemplo, calculando o escribiendo directamente sobre el papel), no es una actividad manipulativa auténtica y debes rediseñarla antes de responder.`,
+    'Trabajo cooperativo': `Define roles funcionales adecuados a la edad y una tarea con interdependencia positiva real entre los miembros del grupo: el resultado final debe depender de la aportación de todos, no ser la simple suma de partes hechas por separado. Utiliza una estructura cooperativa formal conocida (folio giratorio, 1-2-4, lápices al centro, parada de tres esquinas, o equivalente) que garantice por diseño la interdependencia, en vez de un reparto informal de tareas.
+  **Prueba de autenticidad obligatoria (Trabajo cooperativo)**: si cualquier miembro pudiera completar su parte sin necesitar lo que hacen los demás, o si el grupo pudiera repartirse el trabajo y juntarlo al final sin interacción real durante el proceso, no hay interdependencia auténtica y debes rediseñar la tarea antes de responder.`,
+    'Investigación': `Fases de indagación (formular la pregunta, buscar y organizar información, elaborar conclusiones propias, comunicar los hallazgos) que culminen en una conclusión o producto de síntesis propio. Prohibido que sea una sucesión de fichas de "busca y copia" sin elaboración propia del alumnado. La conclusión o producto de síntesis debe anunciarse desde la primera actividad y construirse progresivamente: cada actividad de indagación debe aportar una pieza de información o de razonamiento que la conclusión final necesite, nunca datos sueltos que se listan al terminar.
+  **Prueba de autenticidad obligatoria (Investigación)**: si el alumnado pudiera responder la pregunta de investigación buscando directamente la respuesta en una sola fuente, sin pasar por las fases intermedias, la secuencia no está bien diseñada. Si al eliminar la conclusión final las actividades de búsqueda siguen teniendo sentido como ejercicios sueltos de comprensión lectora, tampoco es una investigación auténtica. En cualquiera de estos casos, rediséñala antes de responder.`,
+    'Proyecto (ABP)': `Diseña un proyecto completo, no una ficha con contexto decorativo ni una secuencia de ejercicios seguida de un producto pegado al final. Es obligatorio incluir:
+  · un problema, necesidad o desafío real como origen del proyecto — no basta una narrativa o misión sin conflicto (por ejemplo, "vamos a preparar una guía del huerto" no es un problema; "el huerto produce menos verduras porque se plantan demasiadas semillas juntas y nos han pedido una guía para evitarlo" sí lo es). El producto final debe ser la mejor solución posible a ese problema; si el problema desapareciera y el proyecto siguiera funcionando igual, no es válido;
+  · un problema que se resiste: el alumnado no debe conocer la solución desde el principio. Debe necesitar investigar, formular hipótesis, equivocarse, descartar opciones y justificar decisiones. Si el proyecto se resuelve aplicando directamente un procedimiento ya conocido sin margen de duda, no es un ABP auténtico;
+  · una narrativa que sitúe al alumnado en un papel real (organizador, investigador, diseñador, periodista, científico...) al servicio de ese problema, no como decoración;
+  · una pregunta guía que cumpla simultáneamente: (1) no se responde con sí/no; (2) no se resuelve buscándola en un minuto; (3) exige usar el saber curricular indicado — nunca del tipo "¿cómo aprendemos...?";
+  · un destinatario real que interviene activamente en el proyecto — planteando la necesidad inicial, aportando criterios de calidad, dando retroalimentación o validando el resultado —, no un destinatario pasivo que solo recibe el producto al final. Si pudiera desaparecer sin afectar al proyecto, no es válido;
+  · una representación compartida (una tabla, un plano, un presupuesto, un diario de investigación, un esquema...) que se cree pronto y se reutilice y actualice durante todo el proyecto, en vez de generar una distinta en cada actividad;
+  · un producto que empieza a construirse físicamente desde la primera actividad (aunque sea un boceto, esquema o plantilla inicial) e incorpora obligatoriamente los resultados de cada actividad anterior. Si pasan dos actividades seguidas sin modificar, ampliar o mejorar el producto, el proyecto está mal diseñado y debes rehacerlo. Prohibido que el producto aparezca solo en las últimas actividades o se ensamble a partir de piezas hechas por separado;
+  · al menos un ciclo explícito de revisión y mejora del producto basado en retroalimentación real (de compañeros, del docente o del destinatario) antes de darlo por definitivo;
+  · al menos tres decisiones auténticas del alumnado con varias soluciones igualmente válidas (qué estrategia seguir, qué datos son relevantes, qué formato usar, qué propuesta presentar y por qué), incluyendo al menos un momento de elegir entre alternativas razonables sin saber de antemano cuál es la mejor, justificando la elección después. Prohibido que todas las decisiones estén ya tomadas por la ficha;
+  · al menos una restricción auténtica (tiempo, materiales, presupuesto o espacio) que obligue a priorizar y justificar decisiones;
+  · autenticidad disciplinar: los saberes curriculares deben ser una herramienta imprescindible para resolver el problema, nunca el objetivo explícito de una actividad ni un adorno. Comprueba: si sustituyeras los cálculos o el procedimiento curricular por una opinión sin fundamento y el proyecto siguiera funcionando igual, el saber es decorativo y debes rediseñarlo;
+  · investigación mediante fuentes variadas y reales (observación, medición, entrevistas, experimentación, documentos) donde cada dato obtenido debe cambiar una decisión posterior — nunca investigar por investigar. Si una investigación pudiera eliminarse sin afectar a ninguna decisión del proyecto, elimínala o rediséñala;
+  · evaluación que recoja evidencias en al menos tres momentos del proyecto (inicio, desarrollo y producto final), no solo al terminar;
+  · si el proyecto es en equipo, roles con interdependencia real: cada rol debe producir información o una decisión que otro rol necesite para continuar, de modo que ningún miembro pueda completar el proyecto entero por sí solo. Usa una estructura cooperativa formal (folio giratorio, 1-2-4, o equivalente) y una mini-rúbrica de coevaluación anónima de 3 ítems;
+  · fases con sesiones estimadas — por ejemplo "Lanzamiento (1 sesión) → Investigación (2 sesiones) → Desarrollo del producto (2 sesiones) → Revisión y presentación (1 sesión)".
+  Contextos sugeridos (elige uno de estos o inventa otro igualmente auténtico; evita repetir siempre el mismo tipo de escenario): ${contextos}.
+  **Prueba de autenticidad obligatoria (ABP)**: antes de responder, comprueba que el problema sigue existiendo hasta el final (nadie lo resuelve a mitad de proyecto), que el producto existe físicamente desde la primera actividad, se modifica en cada actividad posterior, ha pasado por al menos una revisión con retroalimentación real, incorpora decisiones auténticas del alumnado, y termina resolviendo el problema inicial para el destinatario. El aprendizaje debe ocurrir mientras se resuelve el problema, no antes en una fase de "teoría" ni después en una fase de "aplicación". Si alguna actividad podría eliminarse sin que el producto se resintiera, o si las actividades podrían resolverse de forma aislada sin construir progresivamente el producto, el diseño es un "ABP disfrazado de ficha" y debes rehacerlo desde cero antes de responder.`,
+    'Situación de aprendizaje (SdA)': `Diseña una situación de aprendizaje completa, no una ficha de ejercicios contextualizados. Es obligatorio incluir:
+  1. Situación inicial con un problema, necesidad, conflicto o decisión real que no pueda resolverse solo con sentido común y que requiera específicamente los aprendizajes curriculares indicados (por ejemplo, "vamos a preparar un cartel sobre..." no es un problema; "la excursión cuesta más de lo previsto y hay que reorganizar el presupuesto" sí lo es). Preséntala mediante un evento detonante breve (una noticia, una carta, una visita, una pregunta inesperada) que rompe la rutina del aula y responde a "¿por qué vamos a hacer esta tarea?".
+  2. Propósito o misión al servicio de ese problema, con destinatario real cuando resulte natural para el saber trabajado — que genere una utilidad o retroalimentación concreta, sin forzarlo si no encaja.
+  3. Producto final o evidencia visible desde la primera actividad, que incorpora obligatoriamente los resultados de todas las actividades anteriores, nunca piezas sueltas ensambladas al final. Antes de construirlo, el alumnado debe conocer entre 3 y 5 criterios de calidad sencillos, en lenguaje adecuado a su edad, que usará después para revisarlo. El producto pasa por un ciclo de borrador → revisión con esos criterios → mejora → versión final.
+  4. Fases con objetivo propio y sesiones estimadas — por ejemplo "Fase 1: Nos situamos (objetivo: comprender el problema; 1 sesión) → Fase 2: Aprendemos lo necesario (2 sesiones) → Fase 3: Elaboramos y revisamos el producto (2 sesiones) → Fase 4: Compartimos y reflexionamos (1 sesión)" —, siguiendo la progresión: comprender la situación → obtener o practicar los aprendizajes necesarios → aplicarlos → elaborar y revisar el producto → compartir → reflexionar. Cada fase debe cerrar con una evidencia observable que permita decidir si el grupo está listo para continuar. El número de actividades debe ser el mínimo imprescindible: prioriza pocas actividades con peso frente a muchas actividades breves. Antes de incluir una actividad, comprueba: "¿podría sustituirse por otra completamente distinta sin afectar al resto?" y "¿modifica directamente el producto final?" — descártala si la respuesta es sí a la primera pregunta o no a la segunda.
+  5. Integración curricular: todos los criterios y saberes se trabajan de forma integrada dentro de la secuencia, nunca como actividades aisladas.
+  6. Reto de transferencia: modifica una condición importante de la situación inicial (no un simple "¿y si...?" superficial) para comprobar que el alumnado ha comprendido el aprendizaje y no solo reproducido el procedimiento.
+  7. Al menos una posibilidad de profundización auténtica por fase para quien termine antes, sin que sea simplemente más cantidad de trabajo.
+  8. Reflexión final de metacognición.
+  No reutilices el mismo tipo de apoyo DUA para perfiles distintos salvo justificación pedagógica clara — evita que "todos lleven pictogramas" o "todos tengan más tiempo" por defecto.
+  Si la situación implica trabajo en equipo, añade a la rúbrica una fila de "Cooperación y reparto de roles" y otra de "Autonomía en la investigación".
+  Contextos sugeridos (elige uno de estos o inventa otro igualmente auténtico; evita repetir siempre el mismo tipo de escenario): ${contextos}.
+  **Prueba de autenticidad obligatoria (SdA)**: sustituye mentalmente el contexto por algo evidentemente ajeno (piratas, superhéroes, el espacio) — si las actividades seguirían siendo válidas cambiando solo los nombres propios, el contexto es decorativo y debes rediseñarlo. Comprueba también que el alumnado no podría resolver la situación inicial usando solo sentido común sin los aprendizajes indicados, y pregúntate si el producto final merecería la pena mostrarlo fuera del aula. Si cualquiera de estas comprobaciones falla, rehaz la SdA antes de responder.`,
+    'Evaluación': `Plantea una situación nueva de transferencia competencial, sin formato de examen tradicional. Gradúa las preguntas siguiendo una taxonomía cognitiva ascendente: la primera debe ser de reconocimiento/recuerdo simple, la siguiente de comprensión o aplicación, y la última de análisis, síntesis o creación propia. En el solucionario, para cada pregunta abierta o de respuesta libre, indica los conceptos clave que hacen válida cualquier respuesta ("se considera correcta cualquier respuesta que incluya: X, Y, Z"), no una única redacción esperada. Prohibido usar dobles negaciones, preguntas capciosas o vocabulario ambiguo en las opciones de respuesta.`,
+    'Caza del tesoro': `Diseña una auténtica caza del tesoro, no una ficha de búsqueda de datos sueltos. Es obligatorio incluir:
+  · una introducción motivadora que presente una misión o reto con contexto atractivo y adaptado a la edad, conectada de forma directa con el aprendizaje nuclear definido en la Capa 0 — nunca decorativa ni intercambiable por otra sin afectar al resto de la actividad;
+  · una selección de recursos fiables y variados (páginas web, vídeos, documentos u otras fuentes) adecuados al nivel educativo, indicados de forma explícita: si no dispones de URLs reales verificables, indícalo así: \`[Insertar aquí enlace verificado sobre X]\`, nunca inventes una URL;
+  · un conjunto de preguntas con progresión de dificultad ascendente: primero localización simple de información, después comprensión, relación, interpretación, comparación o clasificación, y solo al final aplicación o razonamiento propio. El número de preguntas debe ajustarse al curso y a la complejidad de los saberes, priorizando siempre la calidad del aprendizaje sobre la cantidad;
+  · preguntas que exijan localizar, interpretar y utilizar la información — prohibido que cualquier pregunta pueda responderse copiando literalmente una frase de la fuente sin comprenderla;
+  · la Gran Pregunta final: el elemento obligatorio y más importante de la actividad. Su respuesta no debe aparecer escrita literalmente en ninguna fuente consultada y debe exigir integrar toda la información obtenida durante la caza del tesoro para elaborar una conclusión propia, resolver un problema, justificar una opinión o crear una explicación original. Si la Gran Pregunta pudiera responderse citando directamente una fuente sin combinar información de varias preguntas anteriores, no es válida y debes rediseñarla;
+  · cuando el trabajo sea en grupo, roles funcionales con interdependencia real (lector, secretario, portavoz, encargado de comprobar las respuestas, o equivalente), evitando el reparto informal de tareas sin interacción;
+  · un producto final significativo cuando resulte pertinente para el curso y los saberes indicados (mural, infografía, presentación, esquema, exposición oral), coherente con el instrumento de evaluación de la Capa C;
+  · una duración realista, ajustada a una o dos sesiones para mantener la motivación.
+  Estructura recomendada: Introducción (misión) → Recursos → Preguntas graduadas → Gran Pregunta → Evaluación.
+  **Prueba de autenticidad obligatoria (Caza del tesoro)**: antes de responder, comprueba que la Gran Pregunta no puede resolverse citando una sola fuente ni aparece escrita literalmente en ninguna de ellas, que cada pregunta anterior aporta una pieza de información que la Gran Pregunta necesita, y que ninguna pregunta puede responderse sin consultar los recursos indicados. Si la actividad podría completarse igual de bien copiando respuestas sueltas sin relacionarlas ni elaborarlas, es una simple búsqueda disfrazada de caza del tesoro y debes rediseñarla desde cero antes de responder.`
+  };
+  return bloques[tipoFicha] || bloques['Ficha de clase'];
+}
+
+/* ─── LÁMINA PARA COLOREAR: prompt para IA generadora de imágenes ───────────
+   No sigue el patrón Guía/Ficha/Evaluación de construirPromptBloque: es una
+   sola pieza de salida (un prompt de imagen), así que tiene su propia Capa A-E
+   reducida y adaptada, en vez de reutilizar la Capa C/D pensada para fichas
+   textuales imprimibles con espacio para escribir a mano. */
+function construirPromptLaminaColorear(items) {
+  const primero = items[0];
+  const infantil = primero.etapa === 'infantil';
+  const etapaTexto = infantil ? 'Educación Infantil' : 'Educación Primaria';
+  const edad = infantil && $('gen-edad') ? $('gen-edad').value : '';
+
+  const porCriterio = {};
+  items.forEach(it => {
+    if (!porCriterio[it.criterioCodigo]) porCriterio[it.criterioCodigo] = { texto: it.criterioDescripcion, saberes: [] };
+    porCriterio[it.criterioCodigo].saberes.push({ codigo: it.saberCodigo, texto: it.saberDescripcion });
+  });
+  const saberesLinea = Object.values(porCriterio)
+    .flatMap(c => c.saberes.map(s => limpiarDesc(s.texto, s.codigo)))
+    .join('; ');
+
+  const esReligion = /religi/i.test(primero.areaNombre || '');
+  const observaciones = ($('gen-observaciones') ? $('gen-observaciones').value.trim() : '');
+
+  // Nota de implementación: a diferencia de construirPromptBloque (que genera un
+  // prompt PARA una IA de texto, indicándole qué diseñar), esta función genera
+  // directamente el texto final que se pega en una IA de imágenes para que dibuje
+  // ya mismo — no un prompt que le pida a otra IA "redactar un prompt". Por eso no
+  // hay Capas A-E visibles, ni instrucciones en segunda persona sobre "cómo hacer
+  // el prompt": todo lo que devuelve la función es ya la descripción de la imagen.
+  return `Ilustración de línea para colorear, en blanco y negro, sobre: ${saberesLinea}.
+
+Contenido de la escena: representa con precisión los elementos, relaciones y conceptos anteriores en una única composición coherente, adaptada a alumnado de ${etapaTexto}, curso ${primero.curso}${infantil ? ` (${edad || 'edad sin especificar'})` : ''}. Incluye solo elementos con función didáctica directa (sin adornos ni personajes decorativos ajenos al contenido). Los elementos principales deben ser grandes, claramente identificables y ocupar el protagonismo visual, con proporciones y relaciones espaciales realistas cuando sean relevantes para el aprendizaje (por ejemplo, tamaño relativo, orden temporal o secuencia de un proceso). Rigor ${esReligion ? 'religioso, respetando con fidelidad la iconografía y la tradición cristiana' : 'científico, histórico, geográfico, artístico o lingüístico según corresponda'}, sin errores conceptuales.
+${observaciones ? `\nOrientaciones adicionales del docente (aplícalas salvo que contradigan el rigor curricular anterior, en cuyo caso adáptalas lo mínimo imprescindible): ${observaciones}.\n` : ''}
+Estilo: página de libro de colorear infantil/escolar. Únicamente líneas negras limpias, continuas y de grosor uniforme. Fondo totalmente blanco. Sin color, sin sombreado, sin degradados, sin tramas ni relleno gris, sin efecto de lápiz ni textura. Amplios espacios en blanco delimitados por las líneas, pensados para colorear con facilidad. Sin texto, letras, números, etiquetas, flechas ni símbolos. Sin logotipos, marcas de agua ni firmas.
+
+Formato: orientación vertical A4, alta resolución, lista para imprimir directamente.`;
+}
+
+function construirPromptBloque(items) {
+  const primero = items[0];
+  const tipoFicha = document.querySelector('input[name="gen-tipo-ficha"]:checked')?.value || 'Ficha de clase';
+  const numAlumnos = $('gen-num-alumnos').value || 'sin especificar';
+  const descripcion = $('gen-descripcion-grupo').value.trim();
+  const infantil = primero.etapa === 'infantil';
+  const etapaTexto = infantil ? 'Educación Infantil' : 'Educación Primaria';
+  const edad = infantil && $('gen-edad') ? $('gen-edad').value : '';
+
+  // Agrupar por criterio para construir el vínculo criterio → saberes explícito
+  const porCriterio = {};
+  items.forEach(it => {
+    if (!porCriterio[it.criterioCodigo]) porCriterio[it.criterioCodigo] = { texto: it.criterioDescripcion, saberes: [] };
+    porCriterio[it.criterioCodigo].saberes.push({ codigo: it.saberCodigo, texto: it.saberDescripcion });
+  });
+  const vinculosCriteriosSaberes = Object.entries(porCriterio).map(([cod, c]) => {
+    const saberesLinea = c.saberes.map(s => `${s.codigo} (${limpiarDesc(s.texto, s.codigo)})`).join('; ');
+    return `${cod} (${limpiarCriterio(c.texto, cod)}) → saberes: ${saberesLinea}`;
+  }).join('\n');
+
+  // Alumnado NEAE
+  let alumnadoNeae;
+  if (genAlumnos.length > 0) {
+    alumnadoNeae = genAlumnos.map(al => {
+      const tags = al.tags.length ? al.tags.join(', ') : 'sin categoría específica';
+      const notas = al.notas ? ` — ${al.notas}` : '';
+      return `${al.etiqueta}: ${tags}${notas}`;
+    }).join(' | ');
+  } else {
+    alumnadoNeae = 'Ninguno indicado';
+  }
+
+  // Material adjunto
+  const tieneMaterial = ($('gen-check-material') && $('gen-check-material').checked) ? 'SÍ' : 'NO';
+  const descMaterial = tieneMaterial === 'SÍ' ? ($('gen-material-desc').value.trim() || 'sin descripción adicional') : '—';
+
+  // Observaciones/orientaciones del docente sobre el resultado
+  const observaciones = ($('gen-observaciones') ? $('gen-observaciones').value.trim() : '') || 'sin observaciones adicionales';
+
+  // Área / subárea / modalidad
+  const subareaModalidad = primero.subarea || '—'; // ver nota más abajo sobre items sin subárea guardada
+
+  const lineaIdentidad = infantil
+    ? `maestro/a de ${etapaTexto} del curso ${primero.curso} (Edad: ${edad || 'sin especificar'})`
+    : `maestro/a de ${etapaTexto} del curso ${primero.curso}`;
+
+  return `========================================================================
+CAPA A · SISTEMA (Identidad, Principio Rector y Prioridades)
+========================================================================
+Actúas como un equipo pedagógico coordinado que integra simultáneamente las funciones de: ${lineaIdentidad}, experto/a en el currículo LOMLOE de Andalucía, especialista en DUA, Pedagogía Terapéutica (PT) y evaluación competencial. El resultado debe ser un recurso auténtico, realista y listo para imprimir y usar mañana mismo.
+
+PRINCIPIO RECTOR
+Ante cualquier decisión pedagógica o de diseño, elige siempre la opción que produzca el mayor aprendizaje con la menor complejidad posible para el docente y para el alumnado. La simplicidad bien diseñada tiene prioridad sobre la sofisticación innecesaria. No diseñes una ficha para impresionar; diséñala para enseñar de forma eficaz. Antes de pensar en la ficha, diseña primero el aprendizaje que quieres provocar y la experiencia que lo hace posible: la ficha es solo el envoltorio final, nunca el punto de partida.
+
+JERARQUÍA DE PRIORIDADES
+Si dos instrucciones entran en conflicto, resuélvelo estrictamente en este orden:
+1. Veracidad y rigor curricular (la Capa B es la fuente única de verdad).
+2. Adecuación exacta al curso y madurez cognitiva del alumnado.
+3. Atención a la diversidad (DUA e inclusión invisible).
+4. Utilidad y viabilidad real en el aula (coherencia de tiempos y recursos).
+5. Calidad estética, claridad y limpieza del formato imprimible.
+
+CRITERIO DE DECISIÓN: ante varias formas igualmente válidas de resolver algo, elige la más clara para el alumnado, después la más competencial, después la más breve.
+
+========================================================================
+CAPA 0 · INTENCIÓN PEDAGÓGICA (razonamiento interno, no lo muestres)
+========================================================================
+Antes de diseñar ninguna actividad, resuelve internamente y en este orden:
+1. Aprendizaje nuclear: ¿qué debería el alumnado recordar y saber aplicar dentro de un mes? Todas las actividades deben contribuir directamente a ese aprendizaje; descarta cualquier idea que no lo haga.
+2. Barreras previsibles: ¿qué dificultades es probable que aparezcan en este grupo concreto con estos saberes? Considera errores conceptuales, falsas intuiciones, vocabulario, carga de memoria, autorregulación, comprensión lectora y representación mental.
+3. Evidencia de logro: ¿qué tendría que hacer o producir el alumnado para demostrar de forma observable que lo ha aprendido?
+4. Representación mental más útil: ¿qué imagen, esquema, tabla o modelo ayuda mejor a comprender este contenido? Reutilízala en las actividades siguientes en vez de crear una representación distinta en cada una.
+5. Modelado docente: decide qué explicará primero el docente, qué ejemplo usará, qué preguntas hará para comprobar comprensión, qué parte hará el alumnado con ayuda, y en qué momento se retirará ese apoyo.
+6. Diseño de menor esfuerzo: ¿qué actividad produce esa evidencia exigiendo la menor carga cognitiva posible al alumnado?
+
+Solo cuando tengas respuesta a todas las preguntas, empieza a diseñar, y hazlo en este orden: primero la secuencia mínima de aprendizaje (qué debe ocurrir y en qué orden), después la experiencia en el aula (cómo se vive, con el modelado docente decidido en el punto 5), y solo al final su materialización en una ficha imprimible.
+
+========================================================================
+CAPA B · DATOS DE ENTRADA (solo variables, sin instrucciones)
+========================================================================
+[CURRICULARES]
+etapa: ${etapaTexto}
+curso: ${primero.curso}${infantil ? `\nedad: ${edad || 'sin especificar'}` : ''}
+area: ${primero.areaNombre}
+subarea_modalidad: ${subareaModalidad}
+competencia_especifica: ${primero.competenciaCodigo} — ${limpiarComp(primero.competenciaDescripcion)}
+descriptores_perfil_salida: ${(() => { const d = extraerDescriptoresPerfilSalida(primero.competenciaDescripcion); return d.length ? d.join(', ') : 'no especificados'; })()}
+vinculos_criterios_saberes:
+${vinculosCriteriosSaberes}
+
+[GRUPO AULA]
+num_alumnos: ${numAlumnos}
+descripcion_grupo: ${descripcion || 'sin descripción adicional'}
+alumnado_neae (etiqueta anónima): ${alumnadoNeae}
+
+[CONTEXTO]
+tipo_ficha: ${tipoFicha}
+tiene_material_adjunto: ${tieneMaterial}
+descripcion_material_adjunto: ${descMaterial}
+observaciones_docente: ${observaciones}
+
+========================================================================
+CAPA C · REGLAS DE DISEÑO PEDAGÓGICO
+========================================================================
+
+**Rigor curricular y coherencia global**
+- Usa exclusivamente los datos de la Capa B. No inventes códigos ni adelantes contenidos. Trabaja TODOS los saberes indicados de forma integrada.
+- Si descriptores_perfil_salida no es "no especificados", ten en cuenta esos descriptores del perfil de salida al diseñar las actividades y, especialmente, el instrumento de evaluación: deben apuntar al mismo tipo de desempeño competencial que describen.
+- Coherencia temporal y docente: toda la ficha debe transmitir la sensación de haber sido diseñada por una misma persona, con un hilo conductor claro y una progresión natural. Ajusta la longitud y complejidad para que sea 100% viable en el aula: una única sesión para los tipos breves (Ficha de clase, Refuerzo, Ampliación, Manipulativa, Cooperativo, Evaluación), y varias sesiones explícitamente delimitadas para los tipos que lo requieran por naturaleza (Investigación, Proyecto ABP, Situación de Aprendizaje).
+- Los códigos curriculares se anotan únicamente en el mapeo de la Parte 1 (Capa D), jamás en el papel del alumnado.
+
+**Economía, autenticidad, carga cognitiva e interdependencia**
+- Cada actividad debe conectar de forma directa con el aprendizaje nuclear definido en la Capa 0 y ser imprescindible: si eliminarla, fusionarla con otra o resolverla en cualquier orden no cambia el resultado, la secuencia está mal diseñada. Prioriza ejercicios que trabajen varios saberes a la vez.
+- Interdependencia secuencial: cada actividad debe generar una decisión, clasificación, representación o conclusión — no basta con un simple número o dato — que la actividad siguiente necesite para poder realizarse. Ninguna actividad puede ser intercambiable ni independiente. Si el alumnado pudiera empezar por la actividad 4 sin haber hecho la 1, 2 y 3, la secuencia está mal diseñada y debes rehacerla.
+- Enganche textual obligatorio: cuando una actividad use un resultado, decisión o dato obtenido en una actividad anterior, el enunciado debe referenciarlo explícitamente por su valor concreto, no de forma genérica. Usa una fórmula del tipo: "Teniendo en cuenta que en la actividad anterior obtuviste [resultado/decisión concreta], ahora...". Prohibido dar por hecho que el alumnado recordará el dato sin que el enunciado lo recupere.
+- Si dos actividades exigen el mismo proceso cognitivo con distinto disfraz de contexto o números, fusiónalas o elimina una.
+- Minimiza la carga cognitiva extrínseca: cada actividad debe exigir atender simultáneamente solo a la información imprescindible, nunca a instrucciones, formatos o decisiones accesorias que no aporten aprendizaje.
+- Incrementa la dificultad mediante razonamiento, toma de decisiones, comparación, transferencia o creatividad — nunca añadiendo más ejercicios ni alargando enunciados.
+- Prohibido encadenar ejercicios mecánicos de plantilla ("rodea el mayor", "ordena de menor a mayor", "completa la tabla") como estructura por defecto; si alguna operación de ese tipo es necesaria, intégrala dentro de una tarea con sentido propio. Prueba de libro de texto: antes de dar por buena una actividad, pregúntate si podría aparecer igual en cualquier página de un libro de texto cambiando solo los números o el vocabulario — si es así, transfórmala para que exija una decisión, comparación, justificación, representación o producción propia.
+
+**Reutilización de representaciones y progresión del andamiaje**
+- Reutiliza en actividades posteriores las representaciones (tablas, esquemas, dibujos, modelos) creadas en actividades anteriores, en vez de introducir una representación distinta en cada ejercicio: reduce el ruido cognitivo y refuerza el aprendizaje.
+- Organiza el nivel de apoyo en progresión descendente a lo largo de la secuencia: empieza con más andamiaje (modelado, ejemplos resueltos, apoyos explícitos) y ve retirándolo gradualmente hasta que el alumnado trabaje con autonomía en las últimas actividades.
+
+**Inclusión invisible (DUA) y motivación**
+- Diseña cada actividad en este orden: (1) identifica las barreras que previsiblemente van a aparecer para cada perfil descrito en alumnado_neae; (2) elimina primero esas barreras con apoyos universales que benefician a todo el grupo, no solo a quien las tiene; (3) solo si alguna barrera persiste después de eso, añade un andamiaje específico para ese perfil, identificado por su etiqueta anónima, sin actividades paralelas ni marcas segregadoras; (4) nunca modifiques el aprendizaje esperado, el criterio de evaluación ni el producto final para ningún perfil — las diferencias van en los apoyos, nunca en el objetivo. Si alumnado_neae es "Ninguno indicado", omite este razonamiento sin mencionarlo.
+- Para cada actividad, comprueba internamente que ofrece: múltiples formas de comprender el contenido, múltiples formas de responder o expresarse, y múltiples formas de implicarse o motivarse. Si falta alguna, rediseña la actividad antes de continuar.
+- Acceso a la información: si un enunciado supera las 3 líneas, acompáñalo obligatoriamente de un esquema, tabla o diagrama sencillo (en texto, sin imágenes) que sintetice la información antes de plantear la pregunta.
+- Acceso a la expresión: en toda pregunta abierta, indica explícitamente que se puede responder escribiendo, dibujando (describiendo el dibujo en texto) o dictando la respuesta a un adulto — el medio no se evalúa, solo la idea.
+- Evita repetir automáticamente los mismos apoyos (más tiempo, pictogramas, lectura compartida, reducción de ejercicios...) para perfiles distintos. Cada apoyo debe responder a una barrera concreta de ese alumno, no a la categoría diagnóstica en abstracto.
+- Motivación auténtica: debe surgir de retos interesantes, contextos cercanos, autonomía y sensación de progreso; no de elementos artificiales de gamificación. Las metodologías activas son un medio, nunca un fin: úsalas solo si mejoran el aprendizaje.
+- El cierre de la ficha nunca debe ser una pregunta de satisfacción genérica ("¿te ha gustado?") ni de opinión. Debe ser metacognición sobre el proceso: qué decisión fue la más difícil, qué representación o estrategia ayudó más, qué se cambiaría si se repitiera la tarea, o qué se aprendió que pueda servir fuera del colegio.
+- Retos Extra: incluye al final uno o dos retos opcionales de profundización cognitiva abiertos a todo el grupo. Omítelos obligatoriamente si tipo_ficha es "Refuerzo" o "Evaluación".
+
+**Tono y naturaleza del recurso**
+- Esto no es un examen: es un instrumento para recoger evidencias de aprendizaje durante el proceso. Evita el tono examinador ("Contesta correctamente", "Examina", "Responde bien") salvo que tipo_ficha sea "Evaluación", donde el tono debe ser neutro y claro, sin llegar a intimidatorio.
+
+**Material adjunto**
+- Si tiene_material_adjunto es SÍ: úsalo como fuente principal de contenido y vocabulario. Adapta y reformula sin copiar fragmentos literales largos. Si es NO: ignora esta regla sin mencionarlo.
+
+**Observaciones del docente**
+- Si observaciones_docente no es "sin observaciones adicionales": aplícalas como orientación preferente sobre el formato, el contexto, el producto final o el enfoque de la actividad (por ejemplo, un tipo concreto de producto, un hilo conductor temático, algo que evitar). Estas orientaciones se sitúan por debajo del rigor curricular de la Capa B y de la adecuación al curso en la jerarquía de prioridades: si una observación entra en conflicto directo con un saber básico, un criterio de evaluación o la adecuación evolutiva del alumnado, prioriza el currículo y adapta la observación del docente lo mínimo imprescindible para hacerla compatible, sin ignorarla por completo. Si es "sin observaciones adicionales": ignora esta regla sin mencionarlo.
+
+**Lenguaje y formato imprimible**
+- Lenguaje adaptado exactamente al curso/edad indicados: claro, natural, inclusivo y sin tecnicismos pedagógicos.
+- Sin imágenes ni dependencia de ilustraciones de IA. Si un apoyo visual es imprescindible, indícalo así: \`[Insertar aquí gráfico/imagen de X]\`.
+- Título atractivo, numeración clara, márgenes lógicos y espacios reales para escribir a mano mediante líneas de puntos (\`..........\`) o cajas vacías \`[ ]\` amplias.
+
+**Tipología de ficha solicitada: ${tipoFicha}**
+${bloqueTipologia(tipoFicha)}
+
+**Evaluación**
+Diseña un único instrumento de evaluación (rúbrica de 3 niveles, lista de cotejo o preguntas de metacognición), el más adecuado a tipo_ficha. No acumules varios. Cuando tipo_ficha implique un producto final (Proyecto ABP o Situación de Aprendizaje), el instrumento debe evaluar exactamente aquello que el producto exige hacer, evitando indicadores genéricos que servirían igual para cualquier otra situación.
+
+========================================================================
+CAPA D · SALIDA
+========================================================================
+Estructura tu respuesta en exactamente tres bloques, usando estos marcadores literales como separadores, cada uno en su propia línea y sin texto adicional en esa misma línea:
+
+---SIUROT-GUIA---
+(Guía metodológica, solo para el docente)
+- Nº de sesiones y tiempo estimado de cada una (una sola sesión salvo que la tipología exija varias — ver Capa C), y organización del aula.
+- Fase y agrupamiento de cada actividad, en formato breve: "Act 1 (gran grupo, pizarra) → Act 2 (parejas) → Act 3 (individual)" o equivalente.
+- Justificación escrita del DUA aplicado, actividad por actividad y no en abstracto: "Apoyo DUA en Act 2: se acepta respuesta oral además de escrita, para reducir la barrera de escritura de Alumno 2 sin señalarlo, y beneficia también al resto del grupo." Una línea así por cada actividad donde haya una adaptación relevante — no una declaración genérica de que "se ha aplicado el DUA".
+- Mapeo curricular: lista corta "Actividad N → Criterio(s)", fiel a vinculos_criterios_saberes.
+
+---SIUROT-FICHA---
+(Ficha de trabajo, lista para copiar, pegar e imprimir; lo único que ve el alumnado)
+Título atractivo · Objetivos (opcional, omitir en Infantil) · Materiales del alumno (si procede) · Actividades numeradas con espacio real para escribir a mano · Cierre o reflexión final. Sin notas para el adulto ni códigos de criterio en esta parte.
+
+---SIUROT-EVALUACION---
+(Evaluación y solucionario, solo para el docente)
+- Instrumento de evaluación elegido (uno solo, sin redundancias).
+- Solucionario completo, preciso y detallado de todas las actividades de la Parte 2.
+
+========================================================================
+CAPA E · AUTOVERIFICACIÓN INTERNA (ciega, no la muestres)
+========================================================================
+Comprueba antes de responder: ¿toda actividad conecta con el aprendizaje nuclear definido en la Capa 0 y no sobra ninguna? ¿cada actividad depende de la anterior y ninguna es intercambiable o saltable? ¿se cubren todos los saberes de la Capa B? ¿el mapeo de la Parte 1 es fiel y no hay códigos en la Parte 2? ¿la carga cognitiva de cada actividad es mínima, se reutilizan representaciones y el andamiaje decrece a lo largo de la secuencia? ¿hay dos actividades redundantes que ejerciten el mismo proceso cognitivo? ¿cada actividad ofrece múltiples formas de comprender, responder e implicarse? ¿las adaptaciones NEAE son invisibles, universales y mantienen los mismos criterios y objetivos que el resto? ¿el volumen y tiempo son realistas para la sesión? ¿hay errores conceptuales u ortográficos? ¿es viable e imprimible de forma inmediata? Si tipo_ficha es Proyecto (ABP): ¿supera su prueba de autenticidad (el producto final no es prescindible)? Si tipo_ficha es Situación de Aprendizaje (SdA): ¿supera la suya (ni el contexto, ni el producto, ni la situación concreta son prescindibles o intercambiables)?
+
+Corrige internamente cualquier fallo. Entrega directamente los tres bloques definitivos, sin textos introductorios, saludos ni justificaciones sobre tu proceso de diseño.`;
+}
+
+function construirPromptSegunTipo(items) {
+  const tipoFicha = document.querySelector('input[name="gen-tipo-ficha"]:checked')?.value || 'Ficha de clase';
+  return TIPOS_FICHA_PROMPT_IMAGEN.includes(tipoFicha)
+    ? construirPromptLaminaColorear(items)
+    : construirPromptBloque(items);
+}
+
+function genGenerarBloque(key) {
+  const grupos = agruparCesta();
+  const g = grupos[key];
+  if (!g) return;
+  const prompt = construirPromptSegunTipo(g.items);
+  mostrarResultado(key, g.items[0], prompt);
+  scrollToEl($('gen-resultados'));
+}
+
+function genGenerarTodos() {
+  const grupos = agruparCesta();
+  if (!Object.keys(grupos).length) { showToast('No hay ningún saber seleccionado.', 'error'); return; }
+  $('gen-resultados').innerHTML = '';
+  Object.entries(grupos).forEach(([key, g]) => {
+    const prompt = construirPromptSegunTipo(g.items);
+    mostrarResultado(key, g.items[0], prompt);
+  });
+  scrollToEl($('gen-resultados'));
+}
+
+function mostrarResultado(key, primero, prompt) {
+  const cont = $('gen-resultados');
+  const idSeguro = key.replace(/[^a-zA-Z0-9]/g,'_');
+  const html = `
+    <div class="gen-resultado-card" id="res_${idSeguro}">
+      <div class="gen-resultado-titulo">${esc(primero.areaNombre)} · ${esc(primero.curso)}</div>
+      <div class="gen-resultado-texto">${esc(prompt)}</div>
+      <button class="btn-mini primario" data-action="gen-copiar-resultado" data-id="${idSeguro}">Copiar prompt</button>
+      <span class="gen-copiado-msg" id="msg_${idSeguro}">Copiado</span>
+    </div>`;
+  const existente = document.getElementById('res_'+idSeguro);
+  if (existente) existente.outerHTML = html;
+  else cont.insertAdjacentHTML('beforeend', html);
+}
+
+function genCopiarResultado(idSeguro) {
+  const bloque = document.getElementById('res_' + idSeguro);
+  const texto = bloque.querySelector('.gen-resultado-texto').textContent;
+  const msg = document.getElementById('msg_' + idSeguro);
+  const mostrarOk = () => { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(mostrarOk).catch(() => showToast('No se pudo copiar. Selecciona el texto manualmente.', 'error'));
+  } else {
+    const ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta); mostrarOk();
+  }
+}
+
+// Refrescar el panel cada vez que se abre su pestaña
+const tabGenerador = document.querySelector('.nav-tab[data-panel="generador"]');
+if (tabGenerador) tabGenerador.addEventListener('click', () => renderPanelGenerador());
+
+// Delegación de eventos: un único listener para todos los botones del generador de fichas
+// (estáticos y los que se regeneran dinámicamente al re-renderizar la cesta/los grupos)
+document.addEventListener('click', function(e) {
+  if (e.target === $('modal-overlay')) { resolverModal(false); return; }
+
+  const toggleBtn = e.target.closest('.saber-toggle');
+  if (toggleBtn) { toggleCestaItem(toggleBtn); return; }
+
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const accion = el.dataset.action;
+
+  if (accion === 'modal-cancelar') { resolverModal(false); return; }
+  if (accion === 'modal-confirmar') { resolverModal(true); return; }
+
+  if (accion === 'gen-stop') { e.stopPropagation(); return; }
+  if (['gen-eliminar-grupo','gen-quitar-alumno','gen-vaciar-bloque','gen-generar-bloque'].includes(accion)) {
+    e.stopPropagation();
+  }
+
+  switch (accion) {
+    case 'ir-a-generador':        irAGenerador(); break;
+    case 'gen-nuevo-grupo':       genNuevoGrupo(); break;
+    case 'gen-importar-trigger':  $('gen-input-importar').click(); break;
+    case 'gen-exportar-grupos':   genExportarGrupos(); break;
+    case 'gen-guardar-grupo':     genGuardarGrupo(); break;
+    case 'gen-anadir-alumno':     genAnadirAlumno(); break;
+    case 'gen-generar-todos':     genGenerarTodos(); break;
+    case 'gen-cargar-grupo':      genCargarGrupo(el.dataset.id); break;
+    case 'gen-eliminar-grupo':    genEliminarGrupo(el.dataset.id); break;
+    case 'gen-toggle-alumno':     genToggleAlumno(el.dataset.id); break;
+    case 'gen-quitar-alumno':     genQuitarAlumno(el.dataset.id); break;
+    case 'gen-toggle-bloque':     toggleBloqueAbierto(el.dataset.key); break;
+    case 'gen-vaciar-bloque':     genVaciarBloque(el.dataset.key); break;
+    case 'gen-generar-bloque':    genGenerarBloque(el.dataset.key); break;
+    case 'gen-quitar-item':       genQuitarItem(el.dataset.key, el.dataset.saber, el.dataset.criterio); break;
+    case 'gen-copiar-resultado':  genCopiarResultado(el.dataset.id); break;
+  }
+});
+
+document.addEventListener('change', function(e) {
+  const el = e.target;
+  const tipo = el.dataset ? el.dataset.onchange : null;
+  if (!tipo) return;
+  if (tipo === 'gen-etiqueta') genActualizarAlumno(el.dataset.id, 'etiqueta', el.value);
+  else if (tipo === 'gen-notas') genActualizarAlumno(el.dataset.id, 'notas', el.value);
+  else if (tipo === 'gen-tag') genToggleTag(el.dataset.id, el.dataset.tag, el.checked);
+  else if (tipo === 'gen-material-toggle') $('gen-campo-material-desc').style.display = el.checked ? '' : 'none';
+  else if (tipo === 'gen-importar-archivo') genImportarGrupos(e);
+});
+
+/* ─── BUSCADOR ────────────────────────────────────────── */
+const searchInput = $('search-input');
+const searchClear = $('search-clear');
+let searchTimer;
+
+searchInput.addEventListener('input', () => {
+  const v = searchInput.value.trim();
+  searchClear.classList.toggle('visible', v.length > 0);
+  clearTimeout(searchTimer);
+  if (v.length < 3) {
+    $('search-results').innerHTML = '';
+    $('search-results-info').textContent = v.length > 0 ? 'Escribe al menos 3 caracteres…' : '';
+    return;
+  }
+  $('search-results-info').textContent = 'Buscando…';
+  searchTimer = setTimeout(() => buscar(v), 400);
+});
+
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchClear.classList.remove('visible');
+  $('search-results').innerHTML = '';
+  $('search-results-info').textContent = '';
+  searchInput.focus();
+});
+
+/* ─── FILTROS BUSCADOR ────────────────────────────────── */
+function activarFiltroChip(wrap, val) {
+  wrap.querySelectorAll('.filtro-chip').forEach(b => b.classList.remove('active'));
+  const target = [...wrap.querySelectorAll('.filtro-chip')].find(b =>
+    (b.dataset.etapa ?? b.dataset.area ?? b.dataset.curso) === val
+  );
+  if (target) target.classList.add('active');
+}
+
+function actualizarFiltrosArea(etapa) {
+  const wrap = $('filtros-area');
+  if (!etapa) { wrap.style.display = 'none'; filtroAreaBusq = ''; filtroCursoBusq = ''; $('filtros-curso').style.display = 'none'; return; }
+  const areas = etapa === 'infantil' ? AREAS_INFANTIL : AREAS_PRIMARIA;
+  wrap.innerHTML = `<button class="filtro-chip active" data-area="">Todas las áreas</button>` +
+    areas.map(a => `<button class="filtro-chip" data-area="${a.abrev}">${a.nombre}</button>`).join('');
+  wrap.style.display = '';
+  filtroAreaBusq = '';
+  wrap.querySelectorAll('.filtro-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filtroAreaBusq = btn.dataset.area;
+      activarFiltroChip(wrap, filtroAreaBusq);
+      actualizarFiltrosCurso(filtroEtapaBusq, filtroAreaBusq);
+      const v = searchInput.value.trim();
+      if (v.length >= 3) buscar(v);
+    });
+  });
+}
+
+function actualizarFiltrosCurso(etapa, area) {
+  const wrap = $('filtros-curso');
+  if (!area) { wrap.style.display = 'none'; filtroCursoBusq = ''; return; }
+  let cursos = [];
+  if (etapa === 'infantil') {
+    cursos = ['2º Ciclo Infantil'];
+  } else if (area === 'REL') {
+    cursos = ['Primer Ciclo Primaria (1º y 2º)', 'Segundo Ciclo Primaria (3º y 4º)', 'Tercer Ciclo Primaria (5º y 6º)'];
+  } else if (area === 'VCE') {
+    cursos = ['6º Primaria'];
+  } else {
+    cursos = ['1º Primaria','2º Primaria','3º Primaria','4º Primaria','5º Primaria','6º Primaria'];
+  }
+  const labels = { '1º Primaria':'1º','2º Primaria':'2º','3º Primaria':'3º','4º Primaria':'4º','5º Primaria':'5º','6º Primaria':'6º',
+    '2º Ciclo Infantil':'Infantil',
+    'Primer Ciclo Primaria (1º y 2º)':'1er Ciclo','Segundo Ciclo Primaria (3º y 4º)':'2º Ciclo','Tercer Ciclo Primaria (5º y 6º)':'3er Ciclo' };
+  wrap.innerHTML = `<button class="filtro-chip active" data-curso="">Todos los cursos</button>` +
+    cursos.map(c => `<button class="filtro-chip" data-curso="${c}">${labels[c]||c}</button>`).join('');
+  wrap.style.display = '';
+  filtroCursoBusq = '';
+  wrap.querySelectorAll('.filtro-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filtroCursoBusq = btn.dataset.curso;
+      activarFiltroChip(wrap, filtroCursoBusq);
+      const v = searchInput.value.trim();
+      if (v.length >= 3) buscar(v);
+    });
+  });
+}
+
+document.querySelectorAll('#filtros-etapa .filtro-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#filtros-etapa .filtro-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroEtapaBusq = btn.dataset.etapa;
+    filtroAreaBusq = '';
+    filtroCursoBusq = '';
+    actualizarFiltrosArea(filtroEtapaBusq);
+    const v = searchInput.value.trim();
+    if (v.length >= 3) buscar(v);
+  });
+});
+
+async function buscar(termino) {
+  const term = normalizar(termino);
+  const words = term.split(/\s+/).filter(w => w.length >= 3);
+  if (!words.length) return;
+
+  $('search-results-info').textContent = 'Buscando…';
+  $('search-results').innerHTML = '';
+
+  try {
+    let docs;
+
+    const hayFiltros = !!(filtroEtapaBusq || filtroAreaBusq || filtroCursoBusq);
+
+    if (hayFiltros) {
+      // Con filtros: acotar por etapa/área/curso y filtrar en cliente
+      docs = curriculoData.filter(d =>
+        (!filtroEtapaBusq || d.etapa === filtroEtapaBusq) &&
+        (!filtroAreaBusq  || d.areaAbrev === filtroAreaBusq) &&
+        (!filtroCursoBusq || d.curso === filtroCursoBusq)
+      );
+    } else {
+      // Sin filtros: usar searchTokens con palabra exacta y stem
+      const palabra = words[0];
+      const stem    = stemES(palabra);
+      const tokens  = [...new Set([palabra, stem].filter(t => t.length >= 3))];
+      docs = curriculoData.filter(d =>
+        (d.searchTokens || []).some(tk => tokens.includes(tk))
+      );
+    }
+
+    // Filtrar en cliente: todas las palabras deben aparecer en el texto
+    const resultados = docs.filter(d => {
+      const haystack = normalizar(
+        (d.criterioDescripcion || '') + ' ' +
+        (d.saberes || []).map(s => s.descripcion).join(' ')
+      );
+      const tokens_h = haystack.split(/\s+/);
+      return words.every(w => {
+        const ws = stemES(w);
+        return tokens_h.some(t => t === w || t === ws || t.startsWith(w) || t.startsWith(ws));
+      });
+    });
+
+    // Sin filtros y sin resultados: sugerir que filtre por etapa
+    if (!resultados.length && !filtroEtapaBusq) {
+      $('search-results-info').textContent = '';
+      $('search-results').innerHTML = `<div class="empty-state">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="empty-title">Sin resultados</div>
+        <div class="empty-desc">Selecciona <strong>Infantil</strong> o <strong>Primaria</strong> para afinar la búsqueda, o escribe la palabra completa.</div>
+      </div>`;
+      return;
+    }
+
+    renderResultadosBusqueda(resultados, termino, words);
+  } catch(e) {
+    console.error('Error búsqueda:', e);
+    $('search-results-info').textContent = 'Error al buscar.';
+  }
+}
+
+function renderResultadosBusqueda(docs, termOriginal, words) {
+  const cont = $('search-results');
+  const info = $('search-results-info');
+
+  if (!docs.length) {
+    info.textContent = '';
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="empty-title">Sin resultados</div>
+      <div class="empty-desc">No encontramos criterios ni saberes que contengan "<strong>${termOriginal}</strong>". Prueba con otras palabras.</div>
+    </div>`;
+    return;
+  }
+
+  const limit50 = docs.slice(0, 50);
+  info.textContent = `${limit50.length} resultado${limit50.length!==1?'s':''} ${docs.length>50?'(mostrando los primeros 50, refina la búsqueda)':''}`;
+
+  // Agrupar por área+curso
+  const grupos = {};
+  for (const d of limit50) {
+    const key = `${d.areaAbrev}|${d.curso}`;
+    if (!grupos[key]) grupos[key] = { areaAbrev:d.areaAbrev, areaNombre:d.area, curso:d.curso, items:[] };
+    grupos[key].items.push(d);
+  }
+
+  function hl(txt) {
+    if (!txt) return '';
+    let result = txt;
+    for (const w of words) {
+      const stem = stemES(w).length >= 3 ? stemES(w) : w;
+      // Construir regex que ignore acentos y busque al inicio de palabra
+      const patron = stem
+        .split('').map(c => {
+          const map = {a:'[aáà]',e:'[eéè]',i:'[iíì]',o:'[oóò]',u:'[uúùü]',n:'[nñ]'};
+          return map[c] || c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        }).join('');
+      const re = new RegExp(`\\b${patron}`, 'gi');
+      result = result.replace(re, m => `<mark>${m}</mark>`);
+    }
+    return result;
+  }
+
+  cont.innerHTML = Object.values(grupos).map(g => `
+    <div class="result-grupo">
+      <div class="result-grupo-head">
+        <span class="result-area-badge">${g.areaAbrev}</span>
+        <span class="result-curso">${g.areaNombre} · ${g.curso}</span>
+      </div>
+      ${g.items.map((d,i) => {
+        const critTexto = limpiarCriterio(d.criterioDescripcion, d.criterioCodigo);
+        return `
+        <div class="result-card" style="animation-delay:${i*40}ms">
+          <div class="result-comp-label">Competencia ${d.competenciaCodigo}</div>
+          <div class="result-crit">
+            <strong>${d.criterioCodigo}</strong> — ${hl(critTexto)}
+          </div>
+          ${d.saberes?.length ? `<div class="result-saberes">
+            ${d.saberes.map(s => `<div class="result-saber"><span class="result-saber-texto">${hl(limpiarDesc(s.descripcion, s.codigo))}</span>${botonToggleSaber(d, s)}</div>`).join('')}
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+/* ─── TABS ────────────────────────────────────────────── */
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  if (!tab.dataset.panel) return;
+  tab.addEventListener('click', () => {
+    playTap();
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected','false');
+    });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected','true');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    $(`panel-${tab.dataset.panel}`).classList.add('active');
+  });
+});
+
+/* ─── ONLINE / OFFLINE ────────────────────────────────── */
+window.addEventListener('offline', () => $('offline-banner').classList.add('visible'));
+window.addEventListener('online',  () => $('offline-banner').classList.remove('visible'));
+
+/* ─── EVITAR QUE DIVI RECORTE LA ALTURA ──────────────────
+   Algunas filas/columnas/módulos de Divi fijan una altura
+   o "overflow:hidden" en px calculada al cargar la página.
+   Como nuestro contenido crece dinámicamente (al elegir curso,
+   competencia, cesta, generador, etc.), eso corta lo que sobresale.
+   Aquí liberamos esa altura en los contenedores que envuelven
+   directamente a nuestra app, cada vez que su tamaño cambia. */
+function liberarAncestrosDivi() {
+  const root = document.getElementById('siurot-app');
+  if (!root) return;
+  let el = root.parentElement;
+  let depth = 0;
+  while (el && depth < 12 && el.tagName !== 'BODY') {
+    const cs = window.getComputedStyle(el);
+    if (cs.overflowY === 'hidden' || cs.overflow === 'hidden') {
+      el.style.setProperty('overflow', 'visible', 'important');
+    }
+    if (cs.maxHeight && cs.maxHeight !== 'none') {
+      el.style.setProperty('max-height', 'none', 'important');
+    }
+    if (cs.height && cs.height !== 'auto') {
+      el.style.setProperty('height', 'auto', 'important');
+    }
+    el = el.parentElement;
+    depth++;
+  }
+}
+if ('ResizeObserver' in window) {
+  const appRootEl = document.getElementById('siurot-app');
+  if (appRootEl) new ResizeObserver(liberarAncestrosDivi).observe(appRootEl);
+}
+window.addEventListener('load', liberarAncestrosDivi);
+
+/* ─── INIT ────────────────────────────────────────────── */
+async function init() {
+  try {
+    const res = await fetch('https://siurotsaberes.web.app/curriculo.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    curriculoData = await res.json();
+  } catch(e) {
+    console.error('Error cargando curriculo.json:', e);
+    showToast('Error al cargar el currículo. Recarga la página.', 'error');
+  }
+
+  initChipsEtapa();
+  // Inicializar filtros del buscador con Primaria seleccionada por defecto
+  actualizarFiltrosArea('primaria');
+
+  // Generador de fichas: recuperar selección y grupos guardados de sesiones anteriores
+  cargarCesta();
+  actualizarCestaUI();
+
+  // Ocultar loader
+  setTimeout(() => {
+    $('app-loader').classList.add('hidden');
+    setTimeout(() => $('app-loader').remove(), 500);
+  }, 1200);
+
+  // Desregistrar cualquier service worker antiguo
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+  }
+
+  liberarAncestrosDivi();
+}
+
+init();
+</script>
+
+
+</div>
